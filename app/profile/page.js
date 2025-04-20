@@ -1,6 +1,28 @@
+'use client';
+
 import Layout from '../components/layout';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import PrivateRoute from '@/components/PrivateRoute';
 import { Mail, Phone, MapPin, Calendar, Camera } from 'lucide-react';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
+const [currentUser, setCurrentUser] = useState({});
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    setLoading(true);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if(user) {
+        setCurrentUser(user);
+        setLoading(false);
+      } else {
+        setCurrentUser(null);
+        router.push('/login');
+      }
+    });
+    return () => unsubscribe(); 
+  },[]);
 
 function ProfileSection({ title, children }) {
   return (
@@ -12,7 +34,26 @@ function ProfileSection({ title, children }) {
 }
 
 function Profile() {
+  const [currentUser, setCurrentUser] = useState({});
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    setLoading(true);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if(user) {
+        setCurrentUser(user);
+        setLoading(false);
+      } else {
+        setCurrentUser(null);
+        router.push('/login');
+      }
+    });
+    return () => unsubscribe(); 
+  },[]);
+
   return (
+    <PrivateRoute>
     <Layout>
     <div className="space-y-8">
       {/* Profile Header */}
@@ -29,7 +70,7 @@ function Profile() {
             </button>
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Sarah Anderson</h1>
+            <h1 className="text-2xl font-bold text-gray-900">{ currentUser.displayName }</h1>
             <p className="text-gray-600">Community Member since March 2024</p>
           </div>
         </div>
@@ -94,6 +135,7 @@ function Profile() {
       </ProfileSection>
     </div>
     </Layout>
+    </PrivateRoute>
   );
 }
 

@@ -1,82 +1,337 @@
 'use client';
 import Layout from '../components/layout';
-import React, { useState } from 'react';
-import { Users, Calendar, MapPin, X } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import PrivateRoute from '@/components/PrivateRoute';
+import { Users, Calendar, MapPin, X, Trash2 } from 'lucide-react';
+import axios from 'axios';
+import { format } from "date-fns";
+import Datetime from 'react-datetime';
+import "react-datetime/css/react-datetime.css";
+import moment from 'moment';
 
-function EventCard({ title, date, location, attendees, onJoin }) {
+function SkeltonCard() {
   return (
-    <div className="bg-white p-6 rounded-xl shadow-sm">
-      <h3 className="font-semibold text-lg text-gray-900 mb-2">{title}</h3>
-      <div className="space-y-2">
-        <div className="flex items-center text-gray-600">
-          <Calendar className="h-4 w-4 mr-2" />
-          <span>{date}</span>
+    <div className="bg-white p-6 rounded-xl shadow-sm flex flex-col justify-between h-full animate-pulse">
+      {/* Title and delete icon */}
+      <div className="flex flex-row justify-between items-center mb-2">
+        <div className="h-6 bg-gray-300 rounded w-2/3"></div>
+        <div className="w-5 h-5 bg-gray-300 rounded-full"></div>
+      </div>
+
+      {/* Event Info */}
+      <div className="space-y-4">
+        <div className="flex items-center">
+          <div className="h-4 w-4 bg-gray-300 rounded-full mr-2"></div>
+          <div className="h-4 bg-gray-300 rounded w-1/2"></div>
         </div>
-        <div className="flex items-center text-gray-600">
-          <MapPin className="h-4 w-4 mr-2" />
-          <span>{location}</span>
+        <div className="flex items-center">
+          <div className="h-4 w-4 bg-gray-300 rounded-full mr-2"></div>
+          <div className="h-4 bg-gray-300 rounded w-1/2"></div>
         </div>
-        <div className="flex items-center text-gray-600">
-          <Users className="h-4 w-4 mr-2" />
-          <span>{attendees} attending</span>
+        <div className="flex items-center">
+          <div className="h-4 w-4 bg-gray-300 rounded-full mr-2"></div>
+          <div className="h-4 bg-gray-300 rounded w-1/2"></div>
         </div>
       </div>
+
+      {/* Join button */}
+      <div className="mt-4 h-10 bg-gray-300 rounded-lg w-full"></div>
+    </div>
+
+  )
+};
+
+function EventCard({ _id, title, timeOfEvent, venue, attendingMembers, onJoin, joiningEventId, setJoiningEventId, joining, showConfirmJoin, setShowConfirmJoin, onDelete, deleting }) {
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  return (
+    <>
+      <div className="bg-white p-6 rounded-xl shadow-sm flex flex-col justify-between h-full">
+        <div className="flex flex-row justify-between items-center mb-2">
+          <h3 className="font-semibold text-lg text-gray-900">{title}</h3>
+          <button
+            onClick={() => setShowConfirmDelete(true)}
+            className=" text-gray-400 hover:text-red-500 transition-colors cursor-pointer cursor-pointer"
+          >
+            <Trash2 className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="space-y-2">
+          <div className="flex items-center text-gray-600">
+            <Calendar className="h-4 w-4 mr-2" />
+            <span>{timeOfEvent}</span>
+          </div>
+          <div className="flex items-center text-gray-600">
+            <MapPin className="h-4 w-4 mr-2" />
+            <span>{venue}</span>
+          </div>
+          <div className="flex items-center text-gray-600">
+            <Users className="h-4 w-4 mr-2" />
+            <span>{attendingMembers} attending</span>
+          </div>
+        </div>
+        <button
+          onClick={() => {
+            setShowConfirmJoin(true)
+            setJoiningEventId(_id)
+          }}
+          className="mt-4 w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition-colors cursor-pointer"
+        >
+          Join Event
+        </button>
+      </div>
+
+      {/* Confirm Delete Popup */}
+      {showConfirmDelete && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/10 backdrop-blur-sm z-50">
+          <div className="bg-white rounded-xl shadow-lg p-6 max-w-xs w-full relative animate-fadeIn">
+            <button
+              onClick={() => setShowConfirmDelete(false)}
+              className="absolute top-3 right-4 text-gray-400 hover:text-black cursor-pointer"
+            >
+              <X />
+            </button>
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">{ }</h2>
+            <p className="text-gray-600 mb-6 text-sm">
+              Are you sure you want to Delete this event?
+            </p>
+            <div className="flex justify-between">
+              <button
+                onClick={() => setShowConfirmDelete(false)}
+                className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 text-sm cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  onDelete(_id);
+                }}
+                className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 text-sm cursor-pointer"
+              >
+                {deleting ? "Deleting..." : "Yes, Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirm Join Popup */}
+        {showConfirmJoin && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black/10 backdrop-blur-sm z-50">
+            <div className="bg-white rounded-xl shadow-lg p-6 max-w-xs w-full relative animate-fadeIn">
+              <button
+                onClick={() => setShowConfirmJoin(false)}
+                className="absolute top-3 right-4 text-gray-400 hover:text-black cursor-pointer"
+              >
+                <X />
+              </button>
+              <h2 className="text-lg font-semibold text-gray-800 mb-4">Join this Event?</h2>
+              <p className="text-gray-600 mb-6 text-sm">
+                Are you sure you want to join this event?
+              </p>
+              <div className="flex justify-between">
+                <button
+                  onClick={() => {
+                    setShowConfirmJoin(false);
+                    setJoiningEventId(null);
+                  }}
+                  className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 text-sm cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    onJoin(joiningEventId);
+                  }}
+                  className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 text-sm cursor-pointer"
+                >
+                  { joining ? "Joining..." : "Yes, Join" }
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+    </>
+  );
+}
+
+function CompletedEventCard({ title, timeOfEvent, venue, attendingMembers, onDelete }) {
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+
+  return (
+    <div className="bg-gray-100 p-6 rounded-xl shadow-sm flex flex-col justify-between h-full relative border border-gray-300 opacity-80">
+      <div className='h-[20px] w-full'>
+        <div className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full font-semibold shadow-md">
+          Completed
+        </div>
+      </div>
+
+      <div className="flex flex-row justify-between items-center mb-2">
+        <h3 className="font-semibold text-lg text-gray-700 line-through">{title}</h3>
+        <button
+          onClick={() => setShowConfirmDelete(true)}
+          className="text-gray-400 hover:text-red-500 transition-colors cursor-pointer"
+        >
+          <Trash2 className="w-5 h-5" />
+        </button>
+      </div>
+
+      <div className="space-y-2">
+        <div className="flex items-center text-gray-500">
+          <Calendar className="h-4 w-4 mr-2" />
+          <span>{timeOfEvent}</span>
+        </div>
+        <div className="flex items-center text-gray-500">
+          <MapPin className="h-4 w-4 mr-2" />
+          <span>{venue}</span>
+        </div>
+        <div className="flex items-center text-gray-500">
+          <Users className="h-4 w-4 mr-2" />
+          <span>{attendingMembers} attended</span>
+        </div>
+      </div>
+
       <button
-        onClick={onJoin}
-        className="mt-4 w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition-colors"
+        disabled
+        className="mt-4 w-full bg-gray-400 text-white py-2 rounded-lg cursor-not-allowed"
       >
-        Join Event
+        Event Over
       </button>
     </div>
   );
 }
 
-function Bulletin() {
-  const [events, setEvents] = useState([
-    {
-      title: 'Community Garden Workshop',
-      date: 'March 15, 2024 • 10:00 AM',
-      location: 'Central Park Garden',
-      attendees: 24,
-    },
-    {
-      title: 'Neighborhood Clean-up',
-      date: 'March 18, 2024 • 9:00 AM',
-      location: 'Main Street',
-      attendees: 18,
-    },
-    {
-      title: 'Local Art Exhibition',
-      date: 'March 20, 2024 • 3:00 PM',
-      location: 'Community Center',
-      attendees: 45,
-    },
-  ]);
+function isEventCompleted(timeOfEvent) {
+  const [datePart, timePart] = timeOfEvent.split(' • ');
+  const dateTimeStr = `${datePart} ${timePart}`;
+  const eventDate = new Date(dateTimeStr);
+  const now = new Date();
+  return eventDate < now;
+}
 
-  const [showConfirm, setShowConfirm] = useState(false);
+
+function Bulletin() {
+
   const [showAddPopup, setShowAddPopup] = useState(false);
-  const [newEvent, setNewEvent] = useState({ title: '', date: '', location: '' });
+  const [newEvent, setNewEvent] = useState({ title: '', date: '', location: '', description: '' });
   const [selectedCircle, setSelectedCircle] = useState('');
   const [circleDropdownOpen, setCircleDropdownOpen] = useState(false);
-
+  const [popupAlert, setPopupAlert] = useState({ show: false, message: '', type: 'success' });
+  const [addingEvent, setAddingEvent] = useState(false);
   const userCircles = ['Campus A', 'Photography Club', 'Hostel 3', 'RGUKT Basar'];
+  const [loading, setLoading] = useState(false);
+  const [bulletin, setBulletin] = useState([]);
+  const [deleting, setDeleting] = useState(false);
+  const [joining, setJoining] = useState(false);
+  const [showConfirmJoin, setShowConfirmJoin] = useState(false);
+  const [joiningEventId, setJoiningEventId] = useState(null)
 
-  const handleAddEvent = () => {
-    if (!selectedCircle) return alert('Please select a circle!');
-    setEvents([
-      ...events,
-      {
-        ...newEvent,
-        circle: selectedCircle,
-        attendees: Math.floor(Math.random() * 20 + 5),
-      },
-    ]);
-    setShowAddPopup(false);
-    setNewEvent({ title: '', date: '', location: '' });
-    setSelectedCircle('');
+
+  const showPopupAlert = (message, type = 'success') => {
+    setPopupAlert({ show: true, message, type });
+    setTimeout(() => setPopupAlert({ show: false, message: '', type: 'success' }), 5000);
   };
 
+  const handleDeleteBulletin = async (id) => {
+    setDeleting(true);
+
+    if (!id) {
+      showPopupAlert("❌ Error deleting bulletin.", "error");
+      return;
+    }
+    try {
+      const detetedBulletin = await axios.delete('/api/bulletin', { data: { id } });
+      if (detetedBulletin.status === 200) {
+        await fetchBulletin();
+        showPopupAlert("🎉 Bulletin deleted successfully!", "success");
+      }
+    } catch (error) {
+      console.error(error);
+      showPopupAlert("❌ Error deleting bulletin.", "error");
+    } finally {
+      setDeleting(false);
+    }
+
+  }
+
+  const handleAddEvent = async () => {
+    if (!newEvent.title || !newEvent.date || !newEvent.location) {
+      showPopupAlert("❌ All feilds are required.", "error");
+      return;
+    }
+
+    setAddingEvent(true);
+    const formattedDate = format(new Date(newEvent.date), "MMMM d, yyyy • h:mm a");
+
+    const eventdata = {
+      title: newEvent.title,
+      timeOfEvent: formattedDate,
+      venue: newEvent.location,
+      description: newEvent.description || '',
+    };
+
+    try {
+      const res = await axios.post('/api/bulletin', eventdata);
+
+      if (res.status === 200 || res.status === 201) {
+        await fetchBulletin();
+      }
+      showPopupAlert("🎉 Bulletin created successfully!", "success");
+    } catch (error) {
+      console.error('Error adding event:', error);
+      showPopupAlert("❌ Error creating bulletin.", "error");
+    } finally {
+      setNewEvent({ title: '', date: '', location: '', description: '' });
+      setSelectedCircle('');
+      setCircleDropdownOpen(false);
+      setShowAddPopup(false);
+      setAddingEvent(false);
+    }
+  };
+
+  const handleJoinEvent = async (id) => {
+    setJoining(true);
+    if (!id) {
+      showPopupAlert("❌ Error joining event.", "error");
+      return;
+    }
+    try {
+      const res = await axios.patch(`/api/bulletin/`, { id });
+      if (res.status === 200) {
+        await fetchBulletin();
+        showPopupAlert("🎉 You have joined the event!", "success");
+      }
+    } catch (error) {
+      console.error('Error joining event:', error);
+      showPopupAlert("❌ Error joining event.", "error");
+    } finally {
+      setJoining(false);
+      setShowConfirmJoin(false); 
+    }
+  };
+
+  const fetchBulletin = async () => {
+    try {
+      const res = await axios.get('/api/bulletin');
+      if (res.status === 200) {
+        setBulletin(res.data);
+      }
+    } catch (error) {
+      console.error('Error fetching bulletin:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    setLoading(true);
+
+    fetchBulletin();
+  }, []);
+
+
+
   return (
+    <PrivateRoute>
     <Layout>
       <div className="space-y-8 relative">
         <div className="flex justify-between items-center">
@@ -93,49 +348,43 @@ function Bulletin() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {events.map((event, index) => (
+          {loading ? (
+            Array(3).fill(0).map((_, i) => <SkeltonCard key={i} />
+          )) : (bulletin.length > 0 ? (bulletin.map((event) => (
+
+            isEventCompleted(event.timeOfEvent) ? (
+              <CompletedEventCard
+                key={event._id}
+                title={event.title}
+                timeOfEvent={event.timeOfEvent}
+                venue={event.venue}
+                attendingMembers={event.attendingMembers}
+                onDelete={handleDeleteBulletin}
+              />
+            ) : (
             <EventCard
-              key={index}
-              {...event}
-              onJoin={() => setShowConfirm(true)}
+              key={event._id}
+              _id={event._id}
+              title={event.title}
+              timeOfEvent={event.timeOfEvent}
+              venue={event.venue}
+              attendingMembers={event.attendingMembers}
+              onJoin={handleJoinEvent}
+              joiningEventId={joiningEventId}
+              setJoiningEventId={setJoiningEventId}
+              joining={joining}
+              showConfirmJoin={showConfirmJoin}
+              setShowConfirmJoin={setShowConfirmJoin}
+              onDelete={handleDeleteBulletin}
+              deleting={deleting}
             />
+            )
+          ))) : (
+            <div className="col-span-1 min-h-[60vh] flex justify-center items-center md:col-span-2 lg:col-span-3 text-center">
+              <p className="text-gray-500">No events available at the moment.</p>
+            </div>
           ))}
         </div>
-
-        {/* Confirm Join Popup */}
-        {showConfirm && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black/10 backdrop-blur-sm z-50">
-            <div className="bg-white rounded-xl shadow-lg p-6 max-w-xs w-full relative animate-fadeIn">
-              <button
-                onClick={() => setShowConfirm(false)}
-                className="absolute top-3 right-4 text-gray-400 hover:text-black"
-              >
-                <X />
-              </button>
-              <h2 className="text-lg font-semibold text-gray-800 mb-4">Join this Event?</h2>
-              <p className="text-gray-600 mb-6 text-sm">
-                Are you sure you want to join this event?
-              </p>
-              <div className="flex justify-between">
-                <button
-                  onClick={() => setShowConfirm(false)}
-                  className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 text-sm"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => {
-                    alert('You have joined the event!');
-                    setShowConfirm(false);
-                  }}
-                  className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 text-sm"
-                >
-                  Yes, Join
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Add New Event Popup */}
         {showAddPopup && (
@@ -155,16 +404,30 @@ function Bulletin() {
                 placeholder="Event Title"
                 className="w-full mb-3 px-4 py-2 border rounded-xl text-sm placeholder:text-gray-400"
               />
-              <input
-                value={newEvent.date}
-                onChange={(e) => setNewEvent({ ...newEvent, date: e.target.value })}
-                placeholder="Date & Time"
-                className="w-full mb-3 px-4 py-2 border rounded-xl text-sm placeholder:text-gray-400"
+              <Datetime
+                value={newEvent.date ? moment(newEvent.date, "MMMM D, YYYY • h:mm A") : null}
+                onChange={(date) => {
+                  setNewEvent({ ...newEvent, date: date });
+                }}
+                dateFormat="MMMM D, YYYY"
+                timeFormat="h:mm A"
+                inputProps={{
+                  placeholder: "Select Date & Time",
+                  className: "w-full mb-3 px-4 py-2 border rounded-xl text-sm placeholder:text-gray-400",
+                }}
               />
+
               <input
                 value={newEvent.location}
                 onChange={(e) => setNewEvent({ ...newEvent, location: e.target.value })}
                 placeholder="Location"
+                className="w-full mb-4 px-4 py-2 border rounded-xl text-sm placeholder:text-gray-400"
+              />
+
+              <input
+                value={newEvent.description}
+                onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
+                placeholder="Description"
                 className="w-full mb-4 px-4 py-2 border rounded-xl text-sm placeholder:text-gray-400"
               />
 
@@ -198,14 +461,31 @@ function Bulletin() {
                 onClick={handleAddEvent}
                 className="w-full bg-indigo-600 text-white py-2 rounded-xl text-sm font-semibold hover:bg-indigo-700 transition"
               >
-                ➕ Add Event
+                {addingEvent ? "Adding..." : "➕ Add Event"}
               </button>
             </div>
           </div>
         )}
+
+        {/* Popup Alert */}
+        {popupAlert.show && (
+          <div
+            className={`fixed bottom-6 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg shadow-lg text-white text-sm font-semibold transition-opacity duration-300 z-50 ${popupAlert.type === 'success' ? 'bg-green-500' : 'bg-red-500'
+              }`}
+          >
+            {popupAlert.message}
+          </div>
+        )}
+
       </div>
     </Layout>
+    </PrivateRoute>
   );
 }
 
 export default Bulletin;
+
+// if (moment.isMoment(date)) {
+//   const formatted = date.format("MMMM D, YYYY • h:mm A");
+//   setNewEvent({ ...newEvent, date: formatted });
+// }

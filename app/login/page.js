@@ -2,8 +2,7 @@
 
 import React, { useState } from 'react';
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
-// import { signInWithEmailAndPassword } from 'firebase/auth';
-// import { auth } from '../firebaseConfig';
+import { login } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
 
 const Login = () => {
@@ -12,19 +11,19 @@ const Login = () => {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
-    const router = useRouter(); // Corrected: use useRouter instead of useNavigate
+    const router = useRouter(); 
 
     const handleLogin = async (e) => {
         e.preventDefault();
         setLoading(true);
-        // try {
-        //     await signInWithEmailAndPassword(auth, email, password);
-        //     setLoading(false);
-        //     router.push('/dashboard'); // Example navigation
-        // } catch (err) {
-        //     setError(err.message);
-        //     setLoading(false);
-        // }
+        try {
+            await login(email, password);
+            setLoading(false);
+            router.push('/dashboard'); 
+        } catch (err) {
+            setError(err.message);
+            setLoading(false);
+        }
     };
 
     return(

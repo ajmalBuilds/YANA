@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
+import PrivateRoute from '@/components/PrivateRoute';
 import { format } from "date-fns";
 import {
   Send,
@@ -198,6 +199,7 @@ const Messages = () => {
   const selectedCircleData = circles.find((c) => c.id === selectedCircle);
 
   return (
+    <PrivateRoute>
     <Layout>
       { circles.length > 0 ? (<div className="h-[90vh] flex overflow-hidden">
         {/* Circles List */}
@@ -267,6 +269,7 @@ const Messages = () => {
       ) }
 
     </Layout>
+    </PrivateRoute>
   );
 };
 

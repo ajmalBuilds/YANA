@@ -1,5 +1,11 @@
+'use client';
+
 import Layout from '../components/layout';
-import React from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
+import PrivateRoute from '@/components/PrivateRoute';
 import { Calendar, TrendingUp, Users, Bell } from 'lucide-react';
 
 function ActivityCard({ icon: Icon, title, description, time }) {
@@ -34,11 +40,30 @@ function StatCard({ icon: Icon, label, value }) {
 }
 
 function Dashboard() {
+  const [currentUser, setCurrentUser] = useState({});
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    setLoading(true);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if(user) {
+        setCurrentUser(user);
+        setLoading(false);
+      } else {
+        setCurrentUser(null);
+        router.push('/login');
+      }
+    });
+    return () => unsubscribe(); 
+  },[]);
+
   return (
+    <PrivateRoute>
     <Layout>
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">Welcome back, Sarah!</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-4">Welcome back, {currentUser.displayName}!</h1>
         <p className="text-gray-600">Here's what's happening in your community today.</p>
       </div>
 
@@ -78,6 +103,7 @@ function Dashboard() {
       </div>
     </div>
     </Layout>
+    </PrivateRoute>
   );
 }
 

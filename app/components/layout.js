@@ -22,7 +22,7 @@ function NavLink({ href, icon: Icon, label }) {
 
 export default function Layout({ children }) {
   const pathname = usePathname();
-  const isCirclesPage = pathname === "/circles"; // Check if the user is on the Circles page
+  const isCirclesPage = pathname === "/circles"; 
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -32,7 +32,7 @@ export default function Layout({ children }) {
           <span className="text-xl font-bold text-gray-900">YANA</span>
         </div>
         <nav className="space-y-2">
-          <NavLink href="/" icon={Home} label="Dashboard" />
+          <NavLink href="/dashboard" icon={Home} label="Dashboard" />
           <NavLink href="/bulletin" icon={Bell} label="Bulletin" />
           <NavLink href="/shelf" icon={ShoppingBag} label="Shelf" />
           <NavLink href="/circles" icon={Users} label="Circles" />

@@ -1,5 +1,7 @@
 'use client';
+
 import React, { useState } from 'react';
+import PrivateRoute from '@/components/PrivateRoute';
 import { MapPin, ChevronDown } from 'lucide-react';
 import Layout from '../components/layout';
 
@@ -87,6 +89,7 @@ function Shelf() {
   };
 
   return (
+    <PrivateRoute>
     <Layout>
       <div className="space-y-8">
         <div className="flex justify-between items-center">
@@ -196,6 +199,7 @@ function Shelf() {
         )}
       </div>
     </Layout>
+    </PrivateRoute>
   );
 }
 
