@@ -239,17 +239,28 @@ function Bulletin() {
       showPopupAlert("❌ Error deleting bulletin.", "error");
       return;
     }
-    try {
-      const detetedBulletin = await axios.delete('/api/bulletin', { data: { id } });
-      if (detetedBulletin.status === 200) {
-        await fetchBulletin();
-        showPopupAlert("🎉 Bulletin deleted successfully!", "success");
+
+    let retries = 3;
+    while (retries > 0) {
+      try {
+        const detetedBulletin = await axios.delete('/api/bulletin', { 
+          data: { id },
+          timeout: 10000,
+        });
+        if (detetedBulletin.status === 200) {
+          await fetchBulletin();
+          showPopupAlert("🎉 Bulletin deleted successfully!", "success");
+          break;
+        }
+      } catch (error) {
+        retries -= 1;
+        if (retries === 0) {
+          console.error(error);
+          showPopupAlert("❌ Error deleting bulletin.", "error");
+        }
+      } finally {
+        setDeleting(false);
       }
-    } catch (error) {
-      console.error(error);
-      showPopupAlert("❌ Error deleting bulletin.", "error");
-    } finally {
-      setDeleting(false);
     }
 
   }
@@ -270,22 +281,31 @@ function Bulletin() {
       description: newEvent.description || '',
     };
 
-    try {
-      const res = await axios.post('/api/bulletin', eventdata);
+    let retries = 3;
+    while(retries > 0){
+      try {
+        const res = await axios.post('/api/bulletin', eventdata, {
+          timeout: 10000,
+        });
 
-      if (res.status === 200 || res.status === 201) {
-        await fetchBulletin();
+        if (res.status === 200 || res.status === 201) {
+          await fetchBulletin();
+        }
+        showPopupAlert("🎉 Bulletin created successfully!", "success");
+        break;
+      } catch (error) {
+        retries -= 1;
+        if (retries === 0) {
+          console.error('Error adding event:', error);
+          showPopupAlert("❌ Error creating bulletin.", "error");
+        }
+      } finally {
+        setNewEvent({ title: '', date: '', location: '', description: '' });
+        setSelectedCircle('');
+        setCircleDropdownOpen(false);
+        setShowAddPopup(false);
+        setAddingEvent(false);
       }
-      showPopupAlert("🎉 Bulletin created successfully!", "success");
-    } catch (error) {
-      console.error('Error adding event:', error);
-      showPopupAlert("❌ Error creating bulletin.", "error");
-    } finally {
-      setNewEvent({ title: '', date: '', location: '', description: '' });
-      setSelectedCircle('');
-      setCircleDropdownOpen(false);
-      setShowAddPopup(false);
-      setAddingEvent(false);
     }
   };
 
@@ -295,31 +315,49 @@ function Bulletin() {
       showPopupAlert("❌ Error joining event.", "error");
       return;
     }
-    try {
-      const res = await axios.patch(`/api/bulletin/`, { id });
-      if (res.status === 200) {
-        await fetchBulletin();
-        showPopupAlert("🎉 You have joined the event!", "success");
+
+    let retries = 3;
+    while (retries > 0) {
+      try {
+        const res = await axios.patch(`/api/bulletin/`, { id }, {
+          timeout: 10000,
+        });
+        if (res.status === 200) {
+          await fetchBulletin();
+          showPopupAlert("🎉 You have joined the event!", "success");
+          break;
+        }
+      } catch (error) {
+        retries -=1;
+        if (retries === 0) {
+          console.error('Error joining event:', error);
+          showPopupAlert("❌ Error joining event.", "error");
+        }
+      } finally {
+        setJoining(false);
+        setShowConfirmJoin(false); 
       }
-    } catch (error) {
-      console.error('Error joining event:', error);
-      showPopupAlert("❌ Error joining event.", "error");
-    } finally {
-      setJoining(false);
-      setShowConfirmJoin(false); 
     }
   };
 
   const fetchBulletin = async () => {
-    try {
-      const res = await axios.get('/api/bulletin');
-      if (res.status === 200) {
-        setBulletin(res.data);
+    let retries = 3;
+    while (retries > 0) {
+      try {
+        const res = await axios.get('/api/bulletin', { timeout: 10000 });
+        if (res.status === 200) {
+          setBulletin(res.data);
+          break;
+        }
+      } catch (error) {
+        console.error('Error fetching bulletin:', error);
+        retries -=1;
+        if (retries === 0) {
+          console.error("Failed to fetch bulletin after retries.");
+        }
+      } finally {
+       setLoading(false);
       }
-    } catch (error) {
-      console.error('Error fetching bulletin:', error);
-    } finally {
-      setLoading(false);
     }
   };
   useEffect(() => {

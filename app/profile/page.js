@@ -36,6 +36,10 @@ function Profile() {
     return () => unsubscribe(); 
   },[]);
 
+  if(loading) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <PrivateRoute>
     <Layout>
