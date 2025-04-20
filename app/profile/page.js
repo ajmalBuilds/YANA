@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import Layout from '../components/layout';
 import React, { useEffect, useState } from 'react';
@@ -6,23 +6,7 @@ import PrivateRoute from '@/components/PrivateRoute';
 import { Mail, Phone, MapPin, Calendar, Camera } from 'lucide-react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
-const [currentUser, setCurrentUser] = useState({});
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
-
-  useEffect(() => {
-    setLoading(true);
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if(user) {
-        setCurrentUser(user);
-        setLoading(false);
-      } else {
-        setCurrentUser(null);
-        router.push('/login');
-      }
-    });
-    return () => unsubscribe(); 
-  },[]);
+import { useRouter } from 'next/navigation';
 
 function ProfileSection({ title, children }) {
   return (
