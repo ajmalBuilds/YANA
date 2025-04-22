@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Users, ShoppingBag, MessageSquare, UserPlus2, Bell, Search, LogOut, CircleUserRound } from 'lucide-react';
+import { Home, Users, ShoppingBag, MessageSquarePlus, UserPlus2, Bell, Search, LogOut, CircleUserRound } from 'lucide-react';
 
 function NavLink({ href, icon: Icon, label }) {
   const pathname = usePathname();
@@ -41,7 +41,7 @@ export default function Layout({ children }) {
       </aside>
 
       <main className="flex-1 ml-64">
-        <header className="bg-white border-b border-gray-200">
+        {!isCirclesPage && <header className="bg-white border-b border-gray-200">
           <div className="flex items-center justify-between px-8 py-4">
             <div className="flex items-center bg-gray-100 rounded-lg px-4 py-2 w-96">
               <Search className="h-5 w-5 text-gray-400 mr-2" />
@@ -60,7 +60,7 @@ export default function Layout({ children }) {
               </button>
             </div>
           </div>
-        </header>
+        </header>}
 
         {/* Conditionally applying padding */}
         <div className={isCirclesPage ? "p-0" : "p-8"}>{children}</div>

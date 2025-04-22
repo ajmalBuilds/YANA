@@ -2,6 +2,8 @@
 import Layout from '../components/layout';
 import React, { useEffect, useState } from 'react';
 import PrivateRoute from '@/components/PrivateRoute';
+import { doc, getDoc } from 'firebase/firestore';
+// import { auth } from 'firebase/firestore';
 import { Users, Calendar, MapPin, X, Trash2 } from 'lucide-react';
 import axios from 'axios';
 import { format } from "date-fns";
@@ -41,19 +43,19 @@ function SkeltonCard() {
   )
 };
 
-function EventCard({ _id, title, timeOfEvent, venue, attendingMembers, onJoin, joiningEventId, setJoiningEventId, joining, showConfirmJoin, setShowConfirmJoin, onDelete, deleting }) {
+function EventCard({ _id, title, timeOfEvent, venue, attendingMembers, onJoin, joiningEventId, setJoiningEventId, joining, showConfirmJoin, setShowConfirmJoin, onDelete, deleting, userRole }) {
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   return (
     <>
       <div className="bg-white p-6 rounded-xl shadow-sm flex flex-col justify-between h-full">
-        <div className="flex flex-row justify-between items-center mb-2">
+        <div className={`${userRole==='admin' ?  'flex flex-row justify-between items-center' : ''}  mb-2 `}>
           <h3 className="font-semibold text-lg text-gray-900">{title}</h3>
-          <button
+          { userRole==='admin' ? (<button
             onClick={() => setShowConfirmDelete(true)}
             className=" text-gray-400 hover:text-red-500 transition-colors cursor-pointer cursor-pointer"
           >
             <Trash2 className="w-5 h-5" />
-          </button>
+          </button>) : ''}
         </div>
         <div className="space-y-2">
           <div className="flex items-center text-gray-600">
@@ -224,8 +226,29 @@ function Bulletin() {
   const [deleting, setDeleting] = useState(false);
   const [joining, setJoining] = useState(false);
   const [showConfirmJoin, setShowConfirmJoin] = useState(false);
-  const [joiningEventId, setJoiningEventId] = useState(null)
+  const [joiningEventId, setJoiningEventId] = useState(null);
+  const [userRole, setUserRole] = useState("admin");
 
+  const getUserRole = async (uid) => {
+    const docRef = doc(db, "users", uid);
+    const docSnap = await getDoc(docRef);
+  
+    if (docSnap.exists()) {
+      return docSnap.data().role;
+    } else {
+      return null;
+    }
+  };
+  // useEffect(() => {
+  //   const fetchUserRole = async () => {
+  //     const user = auth.currentUser;
+  //     if (user) {
+  //       const role = await getUserRole(user.uid);
+  //       setUserRole(role);
+  //     }
+  //   };
+  //   fetchUserRole();
+  // }, []);
 
   const showPopupAlert = (message, type = 'success') => {
     setPopupAlert({ show: true, message, type });
@@ -240,28 +263,20 @@ function Bulletin() {
       return;
     }
 
-    let retries = 3;
-    while (retries > 0) {
+    
       try {
-        const detetedBulletin = await axios.delete('/api/bulletin', { 
-          data: { id },
-          timeout: 10000,
-        });
+        const detetedBulletin = await axios.delete('/api/bulletin', { data: { id } });
         if (detetedBulletin.status === 200) {
           await fetchBulletin();
           showPopupAlert("🎉 Bulletin deleted successfully!", "success");
-          break;
         }
       } catch (error) {
-        retries -= 1;
-        if (retries === 0) {
+      
           console.error(error);
           showPopupAlert("❌ Error deleting bulletin.", "error");
-        }
       } finally {
         setDeleting(false);
       }
-    }
 
   }
 
@@ -281,24 +296,17 @@ function Bulletin() {
       description: newEvent.description || '',
     };
 
-    let retries = 3;
-    while(retries > 0){
+   
       try {
-        const res = await axios.post('/api/bulletin', eventdata, {
-          timeout: 10000,
-        });
+        const res = await axios.post('/api/bulletin', eventdata );
 
         if (res.status === 200 || res.status === 201) {
           await fetchBulletin();
         }
         showPopupAlert("🎉 Bulletin created successfully!", "success");
-        break;
       } catch (error) {
-        retries -= 1;
-        if (retries === 0) {
           console.error('Error adding event:', error);
           showPopupAlert("❌ Error creating bulletin.", "error");
-        }
       } finally {
         setNewEvent({ title: '', date: '', location: '', description: '' });
         setSelectedCircle('');
@@ -306,7 +314,6 @@ function Bulletin() {
         setShowAddPopup(false);
         setAddingEvent(false);
       }
-    }
   };
 
   const handleJoinEvent = async (id) => {
@@ -316,49 +323,34 @@ function Bulletin() {
       return;
     }
 
-    let retries = 3;
-    while (retries > 0) {
+    
       try {
-        const res = await axios.patch(`/api/bulletin/`, { id }, {
-          timeout: 10000,
-        });
+        const res = await axios.patch(`/api/bulletin/`, { id } );
         if (res.status === 200) {
           await fetchBulletin();
           showPopupAlert("🎉 You have joined the event!", "success");
-          break;
         }
-      } catch (error) {
-        retries -=1;
-        if (retries === 0) {
+      } catch (error) {      
           console.error('Error joining event:', error);
           showPopupAlert("❌ Error joining event.", "error");
-        }
       } finally {
         setJoining(false);
         setShowConfirmJoin(false); 
       }
-    }
   };
 
   const fetchBulletin = async () => {
-    let retries = 3;
-    while (retries > 0) {
       try {
-        const res = await axios.get('/api/bulletin', { timeout: 10000 });
+        const res = await axios.get('/api/bulletin');
         if (res.status === 200) {
           setBulletin(res.data);
-          break;
         }
       } catch (error) {
         console.error('Error fetching bulletin:', error);
-        retries -=1;
-        if (retries === 0) {
           console.error("Failed to fetch bulletin after retries.");
-        }
       } finally {
        setLoading(false);
       }
-    }
   };
   useEffect(() => {
     setLoading(true);
@@ -415,6 +407,7 @@ function Bulletin() {
               setShowConfirmJoin={setShowConfirmJoin}
               onDelete={handleDeleteBulletin}
               deleting={deleting}
+              userRole={userRole}
             />
             )
           ))) : (
