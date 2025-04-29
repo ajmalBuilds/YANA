@@ -14,9 +14,9 @@ export default async function handler(req, res) {
             res.status(500).json({ error: "Error Fetching Bulletins "});
         }
     } else if (req.method === "POST") {
-        const { title, timeOfEvent, venue, description } = req.body;
+        const { title, timeOfEvent, venue, description, circle, circleIdString, ownerId } = req.body;
 
-        if (!title || !timeOfEvent || !venue ) {
+        if (!title || !timeOfEvent || !venue || !circle || !circleIdString || !ownerId) {
             return res.status(404).json({  error: "All Fields are Required" });
         }
         const createdAt = new Date().toISOString();
@@ -26,9 +26,11 @@ export default async function handler(req, res) {
                 timeOfEvent,
                 venue,
                 description : description || "",
+                circle,
+                circleIdString,
+                ownerId,
                 createdAt,
             });
-            console.log(newBulletin);
             
             res.status(201).json(newBulletin);
         } catch (error) {
@@ -37,11 +39,6 @@ export default async function handler(req, res) {
         }
     } else if (req.method === "DELETE") {
         const { id } = req.body;
-        console.log("id =", id);
-        console.log("req.query =", req.query);
-        console.log("req.body =", req.body);
-        console.log("req.method =", req.method);
-        console.log("Bulletin =", Bulletin);
         
         if (!id) {
             return res.status(404).json({ error: "Bulletin ID is required" });
@@ -59,12 +56,6 @@ export default async function handler(req, res) {
         }
     } else if (req.method === "PATCH") {
         const { id } = req.body;
-
-        console.log("id =", id);
-        console.log("req.query =", req.query);
-        console.log("req.body =", req.body);
-        console.log("req.method =", req.method);
-        console.log("Bulletin =", Bulletin);
 
         if (!id) {
             return res.status(404).json({ error: "Bulletin ID is required" });

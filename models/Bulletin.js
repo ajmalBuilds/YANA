@@ -23,6 +23,18 @@ const bulletinSchema = new Schema({
         type: String,
         default: "",
     },
+    circle: {
+        type: String,
+        required: true,
+    },
+    circleIdString: {
+        type: String,
+        required: true,
+    },
+    ownerId: {
+        type: String,
+        required: true,
+    },
     createdAt: {
         type: Date,
         default: Date.now,

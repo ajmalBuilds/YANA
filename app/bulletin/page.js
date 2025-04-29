@@ -3,6 +3,10 @@ import Layout from '../components/layout';
 import React, { useEffect, useState } from 'react';
 import PrivateRoute from '@/components/PrivateRoute';
 import { doc, getDoc } from 'firebase/firestore';
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from '@/lib/firebase';
+import { createCircle, getAllCircles } from "@/lib/circles";
+import { useRouter } from 'next/navigation';
 // import { auth } from 'firebase/firestore';
 import { Users, Calendar, MapPin, X, Trash2 } from 'lucide-react';
 import axios from 'axios';
@@ -10,6 +14,7 @@ import { format } from "date-fns";
 import Datetime from 'react-datetime';
 import "react-datetime/css/react-datetime.css";
 import moment from 'moment';
+import { set } from 'mongoose';
 
 function SkeltonCard() {
   return (
@@ -43,16 +48,19 @@ function SkeltonCard() {
   )
 };
 
-function EventCard({ _id, title, timeOfEvent, venue, attendingMembers, onJoin, joiningEventId, setJoiningEventId, joining, showConfirmJoin, setShowConfirmJoin, onDelete, deleting, userRole }) {
-  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+function EventCard({ _id, title, timeOfEvent, venue, attendingMembers, onJoin, joining, showConfirmJoin, setShowConfirmJoin, onDelete, deleting, currentUser, ownerId , showConfirmDelete, setShowConfirmDelete, currentEventId, setCurrentEventId }) {
+
   return (
     <>
       <div className="bg-white p-6 rounded-xl shadow-sm flex flex-col justify-between h-full">
-        <div className={`${userRole==='admin' ?  'flex flex-row justify-between items-center' : ''}  mb-2 `}>
+        <div className={`${currentUser===ownerId ?  'flex flex-row justify-between items-center' : ''}  mb-2 `}>
           <h3 className="font-semibold text-lg text-gray-900">{title}</h3>
-          { userRole==='admin' ? (<button
-            onClick={() => setShowConfirmDelete(true)}
-            className=" text-gray-400 hover:text-red-500 transition-colors cursor-pointer cursor-pointer"
+          { currentUser===ownerId ? (<button
+            onClick={() => {
+              setShowConfirmDelete(true);
+              setCurrentEventId(_id);
+            }}
+            className=" text-gray-400 hover:text-red-500 transition-colors cursor-pointer"
           >
             <Trash2 className="w-5 h-5" />
           </button>) : ''}
@@ -73,8 +81,8 @@ function EventCard({ _id, title, timeOfEvent, venue, attendingMembers, onJoin, j
         </div>
         <button
           onClick={() => {
-            setShowConfirmJoin(true)
-            setJoiningEventId(_id)
+            setShowConfirmJoin(true);
+            setCurrentEventId(_id);
           }}
           className="mt-4 w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition-colors cursor-pointer"
         >
@@ -87,7 +95,10 @@ function EventCard({ _id, title, timeOfEvent, venue, attendingMembers, onJoin, j
         <div className="fixed inset-0 flex items-center justify-center bg-black/10 backdrop-blur-sm z-50">
           <div className="bg-white rounded-xl shadow-lg p-6 max-w-xs w-full relative animate-fadeIn">
             <button
-              onClick={() => setShowConfirmDelete(false)}
+              onClick={() => {
+                setShowConfirmDelete(false);
+                setCurrentEventId(null);
+              }}
               className="absolute top-3 right-4 text-gray-400 hover:text-black cursor-pointer"
             >
               <X />
@@ -98,14 +109,18 @@ function EventCard({ _id, title, timeOfEvent, venue, attendingMembers, onJoin, j
             </p>
             <div className="flex justify-between">
               <button
-                onClick={() => setShowConfirmDelete(false)}
+                onClick={() => {
+                  setShowConfirmDelete(false);
+                  setCurrentEventId(null);
+                }}
                 className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 text-sm cursor-pointer"
               >
                 Cancel
               </button>
               <button
+                disabled={deleting}
                 onClick={() => {
-                  onDelete(_id);
+                  onDelete(currentEventId);
                 }}
                 className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 text-sm cursor-pointer"
               >
@@ -121,7 +136,10 @@ function EventCard({ _id, title, timeOfEvent, venue, attendingMembers, onJoin, j
           <div className="fixed inset-0 flex items-center justify-center bg-black/10 backdrop-blur-sm z-50">
             <div className="bg-white rounded-xl shadow-lg p-6 max-w-xs w-full relative animate-fadeIn">
               <button
-                onClick={() => setShowConfirmJoin(false)}
+                onClick={() => {
+                  setShowConfirmJoin(false);
+                  setCurrentEventId(null);
+                }}
                 className="absolute top-3 right-4 text-gray-400 hover:text-black cursor-pointer"
               >
                 <X />
@@ -134,15 +152,16 @@ function EventCard({ _id, title, timeOfEvent, venue, attendingMembers, onJoin, j
                 <button
                   onClick={() => {
                     setShowConfirmJoin(false);
-                    setJoiningEventId(null);
+                    setCurrentEventId(null);
                   }}
                   className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 text-sm cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
+                  disabled={joining}
                   onClick={() => {
-                    onJoin(joiningEventId);
+                    onJoin(currentEventId);
                   }}
                   className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 text-sm cursor-pointer"
                 >
@@ -157,10 +176,10 @@ function EventCard({ _id, title, timeOfEvent, venue, attendingMembers, onJoin, j
   );
 }
 
-function CompletedEventCard({ title, timeOfEvent, venue, attendingMembers, onDelete }) {
-  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+function CompletedEventCard({ _id, title, timeOfEvent, venue, attendingMembers, onDelete, deleting, currentUser, ownerId, showConfirmDelete, setShowConfirmDelete, currentEventId, setCurrentEventId  }) {
 
   return (
+    <>
     <div className="bg-gray-100 p-6 rounded-xl shadow-sm flex flex-col justify-between h-full relative border border-gray-300 opacity-80">
       <div className='h-[20px] w-full'>
         <div className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full font-semibold shadow-md">
@@ -170,12 +189,15 @@ function CompletedEventCard({ title, timeOfEvent, venue, attendingMembers, onDel
 
       <div className="flex flex-row justify-between items-center mb-2">
         <h3 className="font-semibold text-lg text-gray-700 line-through">{title}</h3>
-        <button
-          onClick={() => setShowConfirmDelete(true)}
-          className="text-gray-400 hover:text-red-500 transition-colors cursor-pointer"
-        >
-          <Trash2 className="w-5 h-5" />
-        </button>
+        { currentUser===ownerId ? (<button
+            onClick={() => {
+              setShowConfirmDelete(true);
+              setCurrentEventId(_id);
+            }}
+            className=" text-gray-400 hover:text-red-500 transition-colors cursor-pointer"
+          >
+            <Trash2 className="w-5 h-5" />
+          </button>) : ''}
       </div>
 
       <div className="space-y-2">
@@ -200,6 +222,48 @@ function CompletedEventCard({ title, timeOfEvent, venue, attendingMembers, onDel
         Event Over
       </button>
     </div>
+
+    {/* Confirm Delete Popup */}
+    {showConfirmDelete && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/10 backdrop-blur-sm z-50">
+          <div className="bg-white rounded-xl shadow-lg p-6 max-w-xs w-full relative animate-fadeIn">
+            <button
+              onClick={() => {
+                setShowConfirmDelete(false);
+                setCurrentEventId(null);
+              }}
+              className="absolute top-3 right-4 text-gray-400 hover:text-black cursor-pointer"
+            >
+              <X />
+            </button>
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">{ }</h2>
+            <p className="text-gray-600 mb-6 text-sm">
+              Are you sure you want to Delete this event?
+            </p>
+            <div className="flex justify-between">
+              <button
+                onClick={() => {
+                  setShowConfirmDelete(false);
+                  setCurrentEventId(null);
+                }}
+                className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 text-sm cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  onDelete(currentEventId);
+                }}
+                disabled={deleting}
+                className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 text-sm cursor-pointer"
+              >
+                {deleting ? "Deleting..." : "Yes, Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -220,14 +284,18 @@ function Bulletin() {
   const [circleDropdownOpen, setCircleDropdownOpen] = useState(false);
   const [popupAlert, setPopupAlert] = useState({ show: false, message: '', type: 'success' });
   const [addingEvent, setAddingEvent] = useState(false);
-  const userCircles = ['Campus A', 'Photography Club', 'Hostel 3', 'RGUKT Basar'];
   const [loading, setLoading] = useState(false);
   const [bulletin, setBulletin] = useState([]);
   const [deleting, setDeleting] = useState(false);
   const [joining, setJoining] = useState(false);
   const [showConfirmJoin, setShowConfirmJoin] = useState(false);
   const [joiningEventId, setJoiningEventId] = useState(null);
-  const [userRole, setUserRole] = useState("admin");
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [currentEventId, setCurrentEventId] = useState(null);
+  const [circles, setCircles] = useState([]);
+  const [circleNames, setCircleNames] = useState({});
+  const router = useRouter();
 
   const getUserRole = async (uid) => {
     const docRef = doc(db, "users", uid);
@@ -250,6 +318,41 @@ function Bulletin() {
   //   fetchUserRole();
   // }, []);
 
+  useEffect(() => {
+    setLoading(true);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if(user) {
+        setCurrentUser(user);
+      } else {
+        setCurrentUser(null);
+        router.push('/login');
+      }
+      setLoading(false);
+    });
+    return () => unsubscribe(); 
+  },[]);
+
+    
+  useEffect(() => {
+    if (!currentUser?.uid) return;
+    setLoading(true);
+    const fetchCircles = async () => {
+      const allCircles = await getAllCircles();
+      const usersCircles = allCircles.filter((circle) => {
+        return circle.members?.includes(currentUser?.uid);
+      })
+      setCircles(usersCircles);
+      const newCircleNames = {};
+      usersCircles.forEach((circle) => {
+        newCircleNames[circle.name] = circle.id;
+      });
+      setCircleNames(newCircleNames);
+      setLoading(false);
+    };
+    fetchCircles();
+  }, [currentUser]);
+
+  
   const showPopupAlert = (message, type = 'success') => {
     setPopupAlert({ show: true, message, type });
     setTimeout(() => setPopupAlert({ show: false, message: '', type: 'success' }), 5000);
@@ -257,13 +360,11 @@ function Bulletin() {
 
   const handleDeleteBulletin = async (id) => {
     setDeleting(true);
-
     if (!id) {
+      setDeleting(false);
       showPopupAlert("❌ Error deleting bulletin.", "error");
       return;
     }
-
-    
       try {
         const detetedBulletin = await axios.delete('/api/bulletin', { data: { id } });
         if (detetedBulletin.status === 200) {
@@ -271,17 +372,17 @@ function Bulletin() {
           showPopupAlert("🎉 Bulletin deleted successfully!", "success");
         }
       } catch (error) {
-      
           console.error(error);
           showPopupAlert("❌ Error deleting bulletin.", "error");
       } finally {
         setDeleting(false);
+        setShowConfirmDelete(false);
       }
-
   }
 
   const handleAddEvent = async () => {
-    if (!newEvent.title || !newEvent.date || !newEvent.location) {
+    if (!newEvent.title || !newEvent.date || !newEvent.location || !selectedCircle) {
+      setAddingEvent(false);
       showPopupAlert("❌ All feilds are required.", "error");
       return;
     }
@@ -294,9 +395,11 @@ function Bulletin() {
       timeOfEvent: formattedDate,
       venue: newEvent.location,
       description: newEvent.description || '',
+      circle: selectedCircle,
+      ownerId: currentUser?.uid,
+      circleIdString: circleNames[selectedCircle],
     };
 
-   
       try {
         const res = await axios.post('/api/bulletin', eventdata );
 
@@ -323,8 +426,7 @@ function Bulletin() {
       return;
     }
 
-    
-      try {
+    try {
         const res = await axios.patch(`/api/bulletin/`, { id } );
         if (res.status === 200) {
           await fetchBulletin();
@@ -343,7 +445,10 @@ function Bulletin() {
       try {
         const res = await axios.get('/api/bulletin');
         if (res.status === 200) {
-          setBulletin(res.data);
+          const temp =  res.data;
+          const allowedIds = new Set(Object.values({ ...circleNames }));
+          const filteredBulletins = temp.filter(item => allowedIds.has(item.circleIdString));
+          setBulletin(filteredBulletins);
         }
       } catch (error) {
         console.error('Error fetching bulletin:', error);
@@ -356,7 +461,7 @@ function Bulletin() {
     setLoading(true);
 
     fetchBulletin();
-  }, []);
+  }, [circleNames]);
 
 
 
@@ -385,11 +490,19 @@ function Bulletin() {
             isEventCompleted(event.timeOfEvent) ? (
               <CompletedEventCard
                 key={event._id}
+                _id={event._id}
                 title={event.title}
                 timeOfEvent={event.timeOfEvent}
                 venue={event.venue}
                 attendingMembers={event.attendingMembers}
                 onDelete={handleDeleteBulletin}
+                deleting={deleting}
+                currentUser={currentUser?.uid}
+                ownerId={event.ownerId}
+                showConfirmDelete={showConfirmDelete}
+                setShowConfirmDelete={setShowConfirmDelete}
+                currentEventId={currentEventId}
+                setCurrentEventId={setCurrentEventId}
               />
             ) : (
             <EventCard
@@ -407,7 +520,10 @@ function Bulletin() {
               setShowConfirmJoin={setShowConfirmJoin}
               onDelete={handleDeleteBulletin}
               deleting={deleting}
-              userRole={userRole}
+              showConfirmDelete={showConfirmDelete}
+              setShowConfirmDelete={setShowConfirmDelete}
+              currentEventId={currentEventId}
+              setCurrentEventId={setCurrentEventId}
             />
             )
           ))) : (
@@ -472,16 +588,16 @@ function Bulletin() {
                 </button>
                 {circleDropdownOpen && (
                   <div className="absolute z-10 mt-1 w-full bg-white border rounded-xl shadow-md max-h-40 overflow-y-auto">
-                    {userCircles.map((circle, idx) => (
+                    {circles.map((circle, idx) => (
                       <div
                         key={idx}
                         onClick={() => {
-                          setSelectedCircle(circle);
+                          setSelectedCircle(circle?.name);
                           setCircleDropdownOpen(false);
                         }}
                         className="px-4 py-2 text-sm hover:bg-indigo-100 cursor-pointer"
                       >
-                        {circle}
+                        {circle?.name}
                       </div>
                     ))}
                   </div>

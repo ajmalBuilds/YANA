@@ -164,7 +164,6 @@ const Messages = () => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if(user) {
         setCurrentUser(user);
-        console.log(" USER ID =" , user);
         setLoading(false);
       } else {
         setCurrentUser(null);
@@ -179,13 +178,10 @@ const Messages = () => {
     setLoading(true);
     const fetchCircles = async () => {
       const allCircles = await getAllCircles();
-      console.log("user in Effect =", currentUser);
       const usersCircles = allCircles.filter((circle) => {
         return circle.members?.includes(currentUser.uid);
       })
       setCircles(usersCircles);
-      console.log("all circles = ", allCircles);
-      console.log(" users circles =", usersCircles);
       setLoading(false);
     };
     fetchCircles();
@@ -216,54 +212,6 @@ const Messages = () => {
       showPopupAlert("❌ Failed to create circle", "error");
     }
   };
-
-
-  const circless = useMemo(() => {
-    return [
-      {
-        id: "1",
-        name: "Tech Enthusiasts",
-        avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e",
-        lastMessage:
-          (circleMessages["1"] || []).slice(-1)[0]?.content || "",
-        time:
-          (circleMessages["1"] || []).slice(-1)[0]?.time ||
-          new Date(2024, 2, 10, 14, 30),
-        unread: (circleMessages["1"] || []).filter(
-          (msg) => msg.sender !== "user" && msg.status !== "read"
-        ).length,
-        online: true,
-      },
-      {
-        id: "2",
-        name: "Startup Ideas",
-        avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80",
-        lastMessage:
-          (circleMessages["2"] || []).slice(-1)[0]?.content || "",
-        time:
-          (circleMessages["2"] || []).slice(-1)[0]?.time ||
-          new Date(2024, 2, 10, 12, 15),
-        unread: (circleMessages["2"] || []).filter(
-          (msg) => msg.sender !== "user" && msg.status !== "read"
-        ).length,
-        online: false,
-      },
-      {
-        id: "3",
-        name: "YANA Volunteers",
-        avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e",
-        lastMessage:
-          (circleMessages["3"] || []).slice(-1)[0]?.content || "",
-        time:
-          (circleMessages["3"] || []).slice(-1)[0]?.time ||
-          new Date(2024, 2, 10, 10, 45),
-        unread: (circleMessages["3"] || []).filter(
-          (msg) => msg.sender !== "user" && msg.status !== "read"
-        ).length,
-        online: true,
-      },
-    ];
-  }, [circleMessages]);
 
   const handleSendMessage = () => {
     if (!messageInput.trim()) return;
@@ -318,8 +266,7 @@ const Messages = () => {
             </div>
           </div>
         </header>
-      { circless.length > 0 ? (<div className="h-[90vh] flex overflow-hidden">
-        {/* Circles List */}
+      { circles.length > 0 ? (<div className="h-[90vh] flex overflow-hidden">
         <div className="w-96 bg-white border-r border-gray-200 flex flex-col">
           <div className="p-4 border-b border-gray-200">
             <h1 className="text-2xl font-bold text-gray-900">Yana Circles</h1>

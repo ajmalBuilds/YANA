@@ -98,8 +98,6 @@ const CircleHeader = ({ circle }) => {
     e.preventDefault();
     try {
       setAddingMember(true);
-      console.log("circle Id =", circle.id);
-      console.log("NEW MEMBERB ID =", newMemberId);
       await addMemberToCircle(circle?.id, newMemberId);
       showPopupAlert("🎉 Member added successfully!", "success");
       setNewMemberId('');
@@ -209,7 +207,6 @@ export default function CircleChat({ circleId, selectedCircleData }) {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setCurrentUser(user);
-        console.log(" USER ID =", user);
         // setLoading(false);
       } else {
         setCurrentUser(null);
