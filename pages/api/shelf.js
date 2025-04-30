@@ -2,7 +2,7 @@ import connectDB from "@/lib/connectDB";
 import Shelf from "@/models/Shelf";
 
 export default async function handler(req, res) {
-    connectDB();
+    await connectDB();
 
     if (req.method === "GET") {
         try {
