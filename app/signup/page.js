@@ -2,8 +2,8 @@
 
 import React, { useState } from "react";
 import { Eye, EyeOff, Lock, Mail, User } from "lucide-react";
-import { register } from '@/lib/auth';
-import { useRouter } from 'next/navigation';
+import { register } from "@/lib/auth";
+import { useRouter } from "next/navigation";
 
 const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -11,7 +11,7 @@ const Signup = () => {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
-  const router = useRouter(); 
+  const router = useRouter();
 
   const handleSignup = async (e) => {
     e.preventDefault();
@@ -19,7 +19,7 @@ const Signup = () => {
     try {
       await register(email, password, name);
       setLoading(false);
-      router.push('/dashboard');
+      router.push("/dashboard");
     } catch (err) {
       console.error(err.message);
       setLoading(false);
@@ -147,7 +147,7 @@ const Signup = () => {
                 type="submit"
                 className="w-full bg-indigo-600 text-white rounded-lg py-3 px-4 hover:bg-indigo-700 transition-colors font-medium"
               >
-              { loading ? "Creating..." : "Create account" }
+                {loading ? "Creating..." : "Create account"}
               </button>
             </form>
 
@@ -155,9 +155,9 @@ const Signup = () => {
               <p className="text-sm text-gray-600">
                 Already have an account?{" "}
                 <a href="/login">
-                <button className="font-medium text-indigo-600 hover:text-indigo-500">
-                  Sign in
-                </button>
+                  <button className="font-medium text-indigo-600 hover:text-indigo-500">
+                    Sign in
+                  </button>
                 </a>
               </p>
             </div>

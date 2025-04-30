@@ -15,7 +15,10 @@ const addMemberToCircle = async (circleId, userId) => {
     const members = data.members || [];
 
     if (members.includes(userId)) {
-      return { success: false, message: "User is already a member of this circle" };
+      return {
+        success: false,
+        message: "User is already a member of this circle",
+      };
     }
 
     await updateDoc(circleRef, {
@@ -24,9 +27,11 @@ const addMemberToCircle = async (circleId, userId) => {
         [userId]: new Date().toISOString(),
       },
     });
-    
 
-    return { success: true, message: `User ${userId} added to circle ${circleId}` };
+    return {
+      success: true,
+      message: `User ${userId} added to circle ${circleId}`,
+    };
   } catch (error) {
     console.error("❌ Error adding member:", error.message);
   }

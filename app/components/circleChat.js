@@ -4,7 +4,7 @@ import { format } from "date-fns";
 import { doc, updateDoc, arrayUnion, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from '@/lib/firebase';
+import { auth } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
 import {
   collection,
@@ -14,7 +14,17 @@ import {
   onSnapshot,
   serverTimestamp,
 } from "firebase/firestore";
-import { Paperclip, Send, Smile, Phone, Video, Search, MoreVertical, UserRoundPlus, X } from "lucide-react";
+import {
+  Paperclip,
+  Send,
+  Smile,
+  Phone,
+  Video,
+  Search,
+  MoreVertical,
+  UserRoundPlus,
+  X,
+} from "lucide-react";
 
 const addMemberToCircle = async (circleId, userId) => {
   try {
@@ -29,7 +39,10 @@ const addMemberToCircle = async (circleId, userId) => {
     const members = data.members || [];
 
     if (members.includes(userId)) {
-      return { success: false, message: "User is already a member of this circle" };
+      return {
+        success: false,
+        message: "User is already a member of this circle",
+      };
     }
 
     await updateDoc(circleRef, {
@@ -38,9 +51,11 @@ const addMemberToCircle = async (circleId, userId) => {
         [userId]: new Date().toISOString(),
       },
     });
-    
 
-    return { success: true, message: `User ${userId} added to circle ${circleId}` };
+    return {
+      success: true,
+      message: `User ${userId} added to circle ${circleId}`,
+    };
   } catch (error) {
     console.error("❌ Error adding member:", error.message);
   }
@@ -49,25 +64,40 @@ const addMemberToCircle = async (circleId, userId) => {
 const MessageBubble = ({ message, currentUser }) => {
   return (
     <div
-      className={`flex ${message.senderId === `${currentUser.uid}` ? "justify-end" : "justify-start"
-        } mb-4`}
+      className={`flex ${
+        message.senderId === `${currentUser.uid}`
+          ? "justify-end"
+          : "justify-start"
+      } mb-4`}
     >
       <div
-        className={`max-w-[70%] rounded-2xl px-4 py-2 ${message.senderId === `${currentUser.uid}`
-          ? "bg-indigo-600 text-white rounded-br-none"
-          : "bg-gray-100 text-gray-900 rounded-bl-none"
-          }`}
+        className={`max-w-[70%] rounded-2xl px-4 py-2 ${
+          message.senderId === `${currentUser.uid}`
+            ? "bg-indigo-600 text-white rounded-br-none"
+            : "bg-gray-100 text-gray-900 rounded-bl-none"
+        }`}
       >
+        {!(message.senderId === currentUser.uid) && (
+          <div className="text-xs text-pink-500">
+            {message.senderName.length > 18
+              ? `${message.senderName.slice(0, 18)}...`
+              : message.senderName}
+          </div>
+        )}
+
         <p>{message.text}</p>
         <div
-          className={`flex items-center justify-end gap-1 mt-1 text-xs ${message.senderId === "user" ? "text-indigo-200" : "text-gray-500"
-            }`}
+          className={`flex items-center justify-end gap-1 mt-1 text-xs ${
+            message.senderId === currentUser.uid
+              ? "text-indigo-200"
+              : "text-gray-500"
+          }`}
         >
-          <span className={`${message.senderId === currentUser.uid ? "text-white" : "text-black"}`}>
+          <span
+            className={`${message.senderId === currentUser.uid ? "text-white" : "text-black"}`}
+          >
             {message.createdAt?.seconds &&
-              format(new Date(message.createdAt.seconds * 1000), "h:mm a")
-            }
-
+              format(new Date(message.createdAt.seconds * 1000), "h:mm a")}
           </span>
           {message.senderId === "user" &&
             (message.status === "read" ? (
@@ -78,20 +108,27 @@ const MessageBubble = ({ message, currentUser }) => {
         </div>
       </div>
     </div>
-  )
+  );
 };
 
 // Circle header
 const CircleHeader = ({ circle }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [showAddMemberForm, setShowAddMemberForm] = useState(false);
-  const [newMemberId, setNewMemberId] = useState('');
+  const [newMemberId, setNewMemberId] = useState("");
   const [addingMember, setAddingMember] = useState(false);
-  const [popupAlert, setPopupAlert] = useState({ show: false, message: '', type: 'success' });
+  const [popupAlert, setPopupAlert] = useState({
+    show: false,
+    message: "",
+    type: "success",
+  });
 
-  const showPopupAlert = (message, type = 'success') => {
+  const showPopupAlert = (message, type = "success") => {
     setPopupAlert({ show: true, message, type });
-    setTimeout(() => setPopupAlert({ show: false, message: '', type: 'success' }), 5000);
+    setTimeout(
+      () => setPopupAlert({ show: false, message: "", type: "success" }),
+      5000
+    );
   };
 
   const handleAddNewMember = async (e) => {
@@ -100,23 +137,22 @@ const CircleHeader = ({ circle }) => {
       setAddingMember(true);
       await addMemberToCircle(circle?.id, newMemberId);
       showPopupAlert("🎉 Member added successfully!", "success");
-      setNewMemberId('');
+      setNewMemberId("");
       setShowAddMemberForm(false);
     } catch (error) {
       showPopupAlert("❌ Error adding member.", "error");
       console.error("Error adding member: ", error);
-
     } finally {
       setAddingMember(false);
     }
   };
-  
-   return (
+
+  return (
     <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white sticky top-0 z-10">
       <div className="flex items-center space-x-4">
         <div className="relative">
           <img
-            src={'/assets/avatar.png'}
+            src={"/assets/avatar.png"}
             alt={circle?.name}
             className="w-12 h-12 rounded-full object-cover"
           />
@@ -133,7 +169,10 @@ const CircleHeader = ({ circle }) => {
       </div>
       <div className="flex items-center space-x-4">
         {[Phone, Video].map((Icon, idx) => (
-          <button key={idx} className="p-2 hover:bg-gray-100 rounded-full cursor-pointer">
+          <button
+            key={idx}
+            className="p-2 hover:bg-gray-100 rounded-full cursor-pointer"
+          >
             <Icon className="h-5 w-5 text-gray-600" />
           </button>
         ))}
@@ -152,7 +191,9 @@ const CircleHeader = ({ circle }) => {
             className="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full relative animate-fadeIn"
           >
             <div className="flex flex-row justify-between items-center py-4">
-              <h2 className="text-lg font-semibold text-gray-900 ">📌 Add New Member in Circle</h2>
+              <h2 className="text-lg font-semibold text-gray-900 ">
+                📌 Add New Member in Circle
+              </h2>
               <button
                 onClick={() => setShowAddMemberForm(false)}
                 className="text-gray-400 hover:text-black"
@@ -164,13 +205,11 @@ const CircleHeader = ({ circle }) => {
               type="text"
               placeholder="Enter user ID"
               value={newMemberId}
-              onChange={(e) =>
-                setNewMemberId( e.target.value )
-              }
+              onChange={(e) => setNewMemberId(e.target.value)}
               required
               className="w-full mb-3 px-4 py-2 border rounded-xl text-sm placeholder:text-gray-400"
             />
-            
+
             <button
               type="submit"
               className="w-full bg-indigo-600 text-white py-2 rounded-xl text-sm font-semibold hover:bg-indigo-700 transition cursor-pointer"
@@ -181,17 +220,17 @@ const CircleHeader = ({ circle }) => {
         </div>
       )}
 
-        {popupAlert.show && (
-          <div
-            className={`fixed bottom-6 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg shadow-lg text-white text-sm font-semibold transition-opacity duration-300 z-50 ${popupAlert.type === 'success' ? 'bg-green-500' : 'bg-red-500'
-              }`}
-          >
-            {popupAlert.message}
-          </div>
-        )}
-
+      {popupAlert.show && (
+        <div
+          className={`fixed bottom-6 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg shadow-lg text-white text-sm font-semibold transition-opacity duration-300 z-50 ${
+            popupAlert.type === "success" ? "bg-green-500" : "bg-red-500"
+          }`}
+        >
+          {popupAlert.message}
+        </div>
+      )}
     </div>
-  )
+  );
 };
 
 export default function CircleChat({ circleId, selectedCircleData }) {
@@ -199,7 +238,7 @@ export default function CircleChat({ circleId, selectedCircleData }) {
   const [messageInput, setMessageInput] = useState("");
   const user = auth.currentUser;
   const messagesEndRef = useRef();
-  const [currentUser, setCurrentUser] = useState('');
+  const [currentUser, setCurrentUser] = useState("");
   const router = useRouter();
 
   useEffect(() => {
@@ -210,12 +249,11 @@ export default function CircleChat({ circleId, selectedCircleData }) {
         // setLoading(false);
       } else {
         setCurrentUser(null);
-        router.push('/login');
+        router.push("/login");
       }
     });
     return () => unsubscribe();
   }, []);
-
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -233,6 +271,8 @@ export default function CircleChat({ circleId, selectedCircleData }) {
         ...doc.data(),
       }));
       setMessages(newMessages);
+      console.log("Messages: ", newMessages);
+      console.log("message state=", messages);
       scrollToBottom();
     });
 
@@ -248,6 +288,7 @@ export default function CircleChat({ circleId, selectedCircleData }) {
     await addDoc(messagesRef, {
       text: messageInput.trim(),
       senderId: user.uid,
+      senderName: user.displayName,
       createdAt: serverTimestamp(),
     });
 
@@ -256,52 +297,18 @@ export default function CircleChat({ circleId, selectedCircleData }) {
 
   return (
     <>
-      {/* <div className="p-4 flex flex-col h-[500px] bg-white rounded shadow">
-      <div className="flex-1 overflow-y-auto mb-2 space-y-2">
-        {messages.map((msg) => (
-          <div
-            key={msg.id}
-            className={`p-2 rounded ${
-              msg.senderId === user?.uid
-                ? "bg-blue-100 self-end text-right"
-                : "bg-gray-200 self-start text-left"
-            }`}
-          >
-            <p className="text-sm">{msg.text}</p>
-            <span className="text-xs text-gray-500">
-              {msg.senderId.slice(0, 5)}
-            </span>
-          </div>
-        ))}
-        <div ref={messagesEndRef} />
-      </div>
-      <form onSubmit={sendMessage} className="flex gap-2 mt-auto">
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Type a message"
-          className="flex-1 border p-2 rounded"
-        />
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          Send
-        </button>
-      </form>
-    </div> */}
-
       <div className="flex flex-col flex-1 bg-white">
-
-
-        {/* Header */}
         <CircleHeader circle={selectedCircleData} />
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto p-4  bg-[url('/assets/circles-bg-2.jpg')] bg-cover bg-center space-y-4">
           {messages.map((msg) => (
-            <MessageBubble key={msg.id} message={msg} currentUser={currentUser} />
+            <MessageBubble
+              key={msg.id}
+              message={msg}
+              currentUser={currentUser}
+              senderName={msg.senderName}
+            />
           ))}
           <div ref={messagesEndRef} />
         </div>

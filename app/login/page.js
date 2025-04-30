@@ -1,48 +1,45 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
-import { login } from '@/lib/auth';
-import { useRouter } from 'next/navigation';
+import React, { useState } from "react";
+import { Eye, EyeOff, Lock, Mail } from "lucide-react";
+import { login } from "@/lib/auth";
+import { useRouter } from "next/navigation";
 
 const Login = () => {
-    const [showPassword, setShowPassword] = useState(false);
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [error, setError] = useState("");
-    const [loading, setLoading] = useState(false);
-    const router = useRouter(); 
+  const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
-    const handleLogin = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        try {
-            await login(email, password);
-            setLoading(false);
-            router.push('/dashboard'); 
-        } catch (err) {
-            setError(err.message);
-            setLoading(false);
-        }
-    };
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await login(email, password);
+      setLoading(false);
+      router.push("/dashboard");
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
+    }
+  };
 
-    return(
-
-        <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 flex items-center justify-center px-4">
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 flex items-center justify-center px-4">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          
           <h2 className="text-3xl font-bold text-gray-900">Welcome back</h2>
-          <p className="text-gray-600 mt-2">Sign in to your account to continue</p>
+          <p className="text-gray-600 mt-2">
+            Sign in to your account to continue
+          </p>
         </div>
 
         <div className="bg-white p-8 rounded-2xl shadow-xl">
           <form onSubmit={handleLogin} className="space-y-6">
-          
-            {error && (
-              <p className='text-red-600'>{error}</p>
-            )}
-        
+            {error && <p className="text-red-600">{error}</p>}
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Email address
@@ -100,12 +97,18 @@ const Login = () => {
                   id="remember-me"
                   type="checkbox"
                   className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                  />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
+                />
+                <label
+                  htmlFor="remember-me"
+                  className="ml-2 block text-sm text-gray-700"
+                >
                   Remember me
                 </label>
               </div>
-              <button type="button" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+              <button
+                type="button"
+                className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
+              >
                 Forgot password?
               </button>
             </div>
@@ -120,20 +123,18 @@ const Login = () => {
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
-              Don't have an account?{' '}
+              Don't have an account?{" "}
               <a href="/signup">
-              <button
-                className="font-medium text-indigo-600 hover:text-indigo-500"
-                >
-                Sign up
-              </button>
-                </a>
+                <button className="font-medium text-indigo-600 hover:text-indigo-500">
+                  Sign up
+                </button>
+              </a>
             </p>
           </div>
         </div>
       </div>
     </div>
-    )
-  }
+  );
+};
 
-  export default Login;
+export default Login;

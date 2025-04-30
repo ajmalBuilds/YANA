@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import PrivateRoute from '@/components/PrivateRoute';
+import PrivateRoute from "@/components/PrivateRoute";
 import { format } from "date-fns";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from '@/lib/firebase';
-import { useRouter } from 'next/navigation';
+import { auth } from "@/lib/firebase";
+import { useRouter } from "next/navigation";
 import {
   Send,
   Smile,
@@ -36,7 +36,7 @@ const CirclePreview = ({ circle, selected, onClick }) => (
   >
     <div className="relative">
       <img
-        src={'/assets/avatar.png'}
+        src={"/assets/avatar.png"}
         alt={circle.name}
         className="w-12 h-12 rounded-full object-cover"
       />
@@ -48,7 +48,7 @@ const CirclePreview = ({ circle, selected, onClick }) => (
       <div className="flex items-center justify-between">
         <h3 className="font-semibold text-gray-900 truncate">{circle.name}</h3>
         <span className="text-sm text-gray-500">
-        {format(new Date(circle.createdAt.seconds * 1000), "h:mm a")}
+          {format(new Date(circle.createdAt.seconds * 1000), "h:mm a")}
         </span>
       </div>
       <p className="text-gray-600 text-sm truncate">{circle.lastMessage}</p>
@@ -131,21 +131,25 @@ const Messages = () => {
   const messageEndRef = useRef(null);
   const [showForm, setShowForm] = useState(false);
   const [circles, setCircles] = useState([]);
-  const [popupAlert, setPopupAlert] = useState({ show: false, message: '', type: 'success' });
+  const [popupAlert, setPopupAlert] = useState({
+    show: false,
+    message: "",
+    type: "success",
+  });
   const [newCircle, setNewCircle] = useState({
     name: "",
     description: "",
   });
 
   const [currentUser, setCurrentUser] = useState({});
-    const [loading, setLoading] = useState(true);
-    const [creatingCircle, setCreatingCircle] = useState(false);
-    const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [creatingCircle, setCreatingCircle] = useState(false);
+  const router = useRouter();
 
   const [circleMessages, setCircleMessages] = useState({
-    "1": [],
-    "2": [],
-    "3": [],
+    1: [],
+    2: [],
+    3: [],
   });
 
   useEffect(() => {
@@ -154,24 +158,27 @@ const Messages = () => {
     }
   }, [circles]);
 
-  const showPopupAlert = (message, type = 'success') => {
+  const showPopupAlert = (message, type = "success") => {
     setPopupAlert({ show: true, message, type });
-    setTimeout(() => setPopupAlert({ show: false, message: '', type: 'success' }), 5000);
+    setTimeout(
+      () => setPopupAlert({ show: false, message: "", type: "success" }),
+      5000
+    );
   };
 
   useEffect(() => {
     setLoading(true);
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if(user) {
+      if (user) {
         setCurrentUser(user);
         setLoading(false);
       } else {
         setCurrentUser(null);
-        router.push('/login');
+        router.push("/login");
       }
     });
-    return () => unsubscribe(); 
-  },[]);
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     if (!currentUser.uid) return;
@@ -180,7 +187,7 @@ const Messages = () => {
       const allCircles = await getAllCircles();
       const usersCircles = allCircles.filter((circle) => {
         return circle.members?.includes(currentUser.uid);
-      })
+      });
       setCircles(usersCircles);
       setLoading(false);
     };
@@ -195,13 +202,16 @@ const Messages = () => {
 
     const id = await createCircle(newCircle, currentUser.uid);
     if (id) {
-      setCircles((prev) => [...prev, {
-        id,
-        ...newCircle,
-        ownerId: currentUser.uid,
-        members: [currentUser.uid],
-        createdAt: new Date()
-      }]);
+      setCircles((prev) => [
+        ...prev,
+        {
+          id,
+          ...newCircle,
+          ownerId: currentUser.uid,
+          members: [currentUser.uid],
+          createdAt: new Date(),
+        },
+      ]);
       setNewCircle({ name: "", description: "" });
       setCreatingCircle(false);
       setShowForm(false);
@@ -240,8 +250,8 @@ const Messages = () => {
 
   return (
     <PrivateRoute>
-    <Layout>
-    <header className="bg-white border-b border-gray-200">
+      <Layout>
+        <header className="bg-white border-b border-gray-200">
           <div className="flex items-center justify-between px-8 py-4">
             <div className="flex items-center bg-gray-100 rounded-lg px-4 py-2 w-96">
               <Search className="h-5 w-5 text-gray-400 mr-2" />
@@ -252,11 +262,12 @@ const Messages = () => {
               />
             </div>
             <div className="flex items-center space-x-4">
-            <button  className="p-2 hover:bg-gray-100 rounded-lg">
-                <MessageSquarePlus className="h-5 w-5 text-gray-600 cursor-pointer" 
-                 onClick={() => setShowForm(!showForm)}
+              <button className="p-2 hover:bg-gray-100 rounded-lg">
+                <MessageSquarePlus
+                  className="h-5 w-5 text-gray-600 cursor-pointer"
+                  onClick={() => setShowForm(!showForm)}
                 />
-            </button>
+              </button>
               <button className="p-2 hover:bg-gray-100 rounded-lg">
                 <Bell className="h-5 w-5 text-gray-600" />
               </button>
@@ -266,87 +277,98 @@ const Messages = () => {
             </div>
           </div>
         </header>
-      { circles.length > 0 ? (<div className="h-[90vh] flex overflow-hidden">
-        <div className="w-96 bg-white border-r border-gray-200 flex flex-col">
-          <div className="p-4 border-b border-gray-200">
-            <h1 className="text-2xl font-bold text-gray-900">Yana Circles</h1>
-          </div>
-          <div className="flex-1 overflow-y-auto">
-            
-            {circles.map((circle) => (
-              <CirclePreview
-                key={circle.id}
-                circle={circle}
-                selected={circle.id === selectedCircle}
-                onClick={() => setSelectedCircle(circle.id)}
+        {circles.length > 0 ? (
+          <div className="h-[90vh] flex overflow-hidden">
+            <div className="w-96 bg-white border-r border-gray-200 flex flex-col">
+              <div className="p-4 border-b border-gray-200">
+                <h1 className="text-2xl font-bold text-gray-900">
+                  Yana Circles
+                </h1>
+              </div>
+              <div className="flex-1 overflow-y-auto">
+                {circles.map((circle) => (
+                  <CirclePreview
+                    key={circle.id}
+                    circle={circle}
+                    selected={circle.id === selectedCircle}
+                    onClick={() => setSelectedCircle(circle.id)}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Circle Messages */}
+            {loading ? (
+              ""
+            ) : (
+              <CircleChat
+                circleId={selectedCircle}
+                selectedCircleData={selectedCircleData}
               />
-            ))}
+            )}
           </div>
-        </div>
+        ) : (
+          <div className="flex items-center justify-center h-full">
+            <p className="text-black-500 text-lg">No Circles</p>
+          </div>
+        )}
 
-        {/* Circle Messages */}
-       { loading ? "" :  (<CircleChat circleId={selectedCircle} selectedCircleData={selectedCircleData} />)}
-
-      </div>) : (
-        <div className="flex items-center justify-center h-full">
-          <p className="text-black-500 text-lg">No Circles</p>
-        </div>
-      ) }
-
-{showForm && (
-  <div className="fixed inset-0 flex items-center justify-center bg-black/10 backdrop-blur-sm z-50">
-        <form
-          onSubmit={handleCreateCircle}
-          className="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full relative animate-fadeIn"
-        >
-          <div className="flex flex-row justify-between items-center py-4">
-              <h2 className="text-lg font-semibold text-gray-900 ">📌 Create New Circle</h2>
+        {showForm && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black/10 backdrop-blur-sm z-50">
+            <form
+              onSubmit={handleCreateCircle}
+              className="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full relative animate-fadeIn"
+            >
+              <div className="flex flex-row justify-between items-center py-4">
+                <h2 className="text-lg font-semibold text-gray-900 ">
+                  📌 Create New Circle
+                </h2>
+                <button
+                  onClick={() => setShowForm(false)}
+                  className="text-gray-400 hover:text-black"
+                >
+                  <X />
+                </button>
+              </div>
+              <input
+                type="text"
+                placeholder="Circle Name"
+                value={newCircle.name}
+                onChange={(e) =>
+                  setNewCircle({ ...newCircle, name: e.target.value })
+                }
+                required
+                className="w-full mb-3 px-4 py-2 border rounded-xl text-sm placeholder:text-gray-400"
+              />
+              <textarea
+                placeholder="Description"
+                value={newCircle.description}
+                onChange={(e) =>
+                  setNewCircle({ ...newCircle, description: e.target.value })
+                }
+                required
+                className="w-full mb-3 px-4 py-2 border rounded-xl text-sm placeholder:text-gray-400"
+              />
               <button
-                onClick={() => setShowForm(false)}
-                className="text-gray-400 hover:text-black"
+                type="submit"
+                className="w-full bg-indigo-600 text-white py-2 rounded-xl text-sm font-semibold hover:bg-indigo-700 transition cursor-pointer"
               >
-                <X />
+                {creatingCircle ? "Creating..." : "Create Circle"}
               </button>
+            </form>
           </div>
-          <input
-            type="text"
-            placeholder="Circle Name"
-            value={newCircle.name}
-            onChange={(e) =>
-              setNewCircle({ ...newCircle, name: e.target.value })
-            }
-            required
-            className="w-full mb-3 px-4 py-2 border rounded-xl text-sm placeholder:text-gray-400"
-          />
-          <textarea
-            placeholder="Description"
-            value={newCircle.description}
-            onChange={(e) =>
-              setNewCircle({ ...newCircle, description: e.target.value })
-            }
-            required
-            className="w-full mb-3 px-4 py-2 border rounded-xl text-sm placeholder:text-gray-400"
-          />
-          <button
-            type="submit"
-            className="w-full bg-indigo-600 text-white py-2 rounded-xl text-sm font-semibold hover:bg-indigo-700 transition cursor-pointer"
-          >
-            { creatingCircle ? "Creating..." : "Create Circle"}
-          </button>
-        </form>
-        </div>
-      )}
+        )}
 
-  {popupAlert.show && (
+        {popupAlert.show && (
           <div
-            className={`fixed bottom-6 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg shadow-lg text-white text-sm font-semibold transition-opacity duration-300 z-50 ${popupAlert.type === 'success' ? 'bg-green-500' : 'bg-red-500'
-              }`}
+            className={`fixed bottom-6 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg shadow-lg text-white text-sm font-semibold transition-opacity duration-300 z-50 ${
+              popupAlert.type === "success" ? "bg-green-500" : "bg-red-500"
+            }`}
           >
             {popupAlert.message}
           </div>
         )}
-
-    </Layout >
+      </Layout>
     </PrivateRoute>
   );
 };

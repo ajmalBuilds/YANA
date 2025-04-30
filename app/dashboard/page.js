@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import Layout from '../components/layout';
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
-import PrivateRoute from '@/components/PrivateRoute';
-import { Calendar, TrendingUp, Users, Bell } from 'lucide-react';
+import Layout from "../components/layout";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "@/lib/firebase";
+import PrivateRoute from "@/components/PrivateRoute";
+import { Calendar, TrendingUp, Users, Bell } from "lucide-react";
 
 function ActivityCard({ icon: Icon, title, description, time }) {
   return (
@@ -47,66 +47,76 @@ function Dashboard() {
   useEffect(() => {
     setLoading(true);
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if(user) {
+      if (user) {
         setCurrentUser(user);
         setLoading(false);
       } else {
         setCurrentUser(null);
-        router.push('/login');
+        router.push("/login");
       }
     });
-    return () => unsubscribe(); 
-  },[]);
+    return () => unsubscribe();
+  }, []);
 
-  if(loading) {
+  if (loading) {
     return <div>Loading...</div>;
   }
 
   return (
     <PrivateRoute>
-    <Layout>
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">Welcome back, {currentUser.displayName}!</h1>
-        <p className="text-gray-600">Here's what's happening in your community today.</p>
-      </div>
+      <Layout>
+        <div className="space-y-8">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">
+              Welcome back, {currentUser.displayName}!
+            </h1>
+            <p className="text-gray-600">
+              Here's what's happening in your community today.
+            </p>
+          </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard icon={Users} value="156" label="Active Neighbors" />
-        <StatCard icon={Calendar} value="12" label="Upcoming Events" />
-        <StatCard icon={TrendingUp} value="89%" label="Community Engagement" />
-        <StatCard icon={Bell} value="24" label="New Updates" />
-      </div>
+          {/* Stats Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <StatCard icon={Users} value="156" label="Active Neighbors" />
+            <StatCard icon={Calendar} value="12" label="Upcoming Events" />
+            <StatCard
+              icon={TrendingUp}
+              value="89%"
+              label="Community Engagement"
+            />
+            <StatCard icon={Bell} value="24" label="New Updates" />
+          </div>
 
-      {/* Recent Activity */}
-      <div className="bg-white rounded-xl shadow-sm">
-        <div className="p-6 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Recent Activity</h2>
+          {/* Recent Activity */}
+          <div className="bg-white rounded-xl shadow-sm">
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900">
+                Recent Activity
+              </h2>
+            </div>
+            <div className="divide-y divide-gray-200">
+              <ActivityCard
+                icon={Users}
+                title="New Community Member"
+                description="John Smith joined your neighborhood community"
+                time="2 hours ago"
+              />
+              <ActivityCard
+                icon={Calendar}
+                title="Upcoming Event"
+                description="Community Garden Workshop this Saturday"
+                time="3 hours ago"
+              />
+              <ActivityCard
+                icon={Bell}
+                title="Community Alert"
+                description="Road maintenance scheduled for next week"
+                time="5 hours ago"
+              />
+            </div>
+          </div>
         </div>
-        <div className="divide-y divide-gray-200">
-          <ActivityCard
-            icon={Users}
-            title="New Community Member"
-            description="John Smith joined your neighborhood community"
-            time="2 hours ago"
-          />
-          <ActivityCard
-            icon={Calendar}
-            title="Upcoming Event"
-            description="Community Garden Workshop this Saturday"
-            time="3 hours ago"
-          />
-          <ActivityCard
-            icon={Bell}
-            title="Community Alert"
-            description="Road maintenance scheduled for next week"
-            time="5 hours ago"
-          />
-        </div>
-      </div>
-    </div>
-    </Layout>
+      </Layout>
     </PrivateRoute>
   );
 }
