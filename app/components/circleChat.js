@@ -73,19 +73,21 @@ const MessageBubble = ({ message, currentUser }) => {
       <div
         className={`max-w-[70%] rounded-2xl px-4 py-2 ${
           message.senderId === `${currentUser.uid}`
-            ? "bg-indigo-600 text-white rounded-br-none"
-            : "bg-gray-100 text-gray-900 rounded-bl-none"
+            ? "bg-indigo-600 text-white rounded-tr-none"
+            : "bg-gray-100 text-gray-900 rounded-tl-none"
         }`}
       >
         {!(message.senderId === currentUser.uid) && (
-          <div className="text-xs text-pink-500">
+          <div className="text-xs text-pink-500 font-bold">
             {message.senderName.length > 18
               ? `${message.senderName.slice(0, 18)}...`
               : message.senderName}
           </div>
         )}
 
-        <p>{message.text}</p>
+        <pre className="whitespace-pre-wrap">
+          <code>{message.text}</code>
+        </pre>
         <div
           className={`flex items-center justify-end gap-1 mt-1 text-xs ${
             message.senderId === currentUser.uid
@@ -94,12 +96,12 @@ const MessageBubble = ({ message, currentUser }) => {
           }`}
         >
           <span
-            className={`${message.senderId === currentUser.uid ? "text-white" : "text-black"}`}
+          // className={`${message.senderId === currentUser.uid ? "text-white" : "text-black"}`}
           >
             {message.createdAt?.seconds &&
               format(new Date(message.createdAt.seconds * 1000), "h:mm a")}
           </span>
-          {message.senderId === "user" &&
+          {message.senderId === currentUser?.uid &&
             (message.status === "read" ? (
               <CheckCheck className="h-4 w-4" />
             ) : message.status === "delivered" ? (
@@ -301,13 +303,12 @@ export default function CircleChat({ circleId, selectedCircleData }) {
         <CircleHeader circle={selectedCircleData} />
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4  bg-[url('/assets/circles-bg-2.jpg')] bg-cover bg-center space-y-4">
+        <div className="flex-1 overflow-y-auto p-4 bg-white  bg-[url('/assets/circles-bg-4.jpeg')] bg-contain bg-center space-y-4">
           {messages.map((msg) => (
             <MessageBubble
               key={msg.id}
               message={msg}
               currentUser={currentUser}
-              senderName={msg.senderName}
             />
           ))}
           <div ref={messagesEndRef} />
@@ -319,13 +320,20 @@ export default function CircleChat({ circleId, selectedCircleData }) {
             <button className="p-2 hover:bg-gray-100 rounded-full">
               <Paperclip className="h-5 w-5 text-gray-600 cursor-pointer" />
             </button>
-            <input
+            <textarea
               type="text"
               value={messageInput}
               onChange={(e) => setMessageInput(e.target.value)}
               placeholder="Share something with your circle..."
-              className="flex-1 bg-gray-100 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              onKeyDown={(e) => e.key === "Enter" && sendMessage(e)}
+              rows={1}
+              style={{ lineHeight: "1.5rem" }}
+              onInput={(e) => {
+                e.target.style.height = "auto"; 
+                e.target.style.height = `${e.target.scrollHeight }px`;
+              }}
+              className="flex-1 bg-white flex items-center px-4 py-2 outline-none resize-none hide-scrollbar overflow-y-scroll max-h-25 "
+              // focus:outline-none focus:ring-2 focus:ring-indigo-500
+              /* onKeyDown={(e) => e.key === "Enter" && sendMessage(e)} */
             />
             <button className="p-2 hover:bg-gray-100 rounded-full cursor-pointer">
               <Smile className="h-5 w-5 text-gray-600" />
