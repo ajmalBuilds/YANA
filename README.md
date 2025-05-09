@@ -74,8 +74,7 @@ Your community’s **public announcement board**. From lost items and upcoming e
 
 - ✅ Basic user auth and registration  
 - ✅ Responsive UI  
-- ✅ Feed-based posts  
-- ✅ Real-time chat (coming soon)  
+- ✅ Real-time chat  
 - ✅ Geo-targeted marketplace  
 - 🛠️ **YANA Circles** – Beta testing phase
 - 🛠️ **YANA Shelf** – Beta testing phase   
@@ -89,8 +88,8 @@ Your community’s **public announcement board**. From lost items and upcoming e
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/YOUR_USERNAME/yana.git
-cd yana
+git clone https://github.com/ajmalBuilds/YANA.git
+cd YANA
 
 # 2. Install dependencies
 npm install
