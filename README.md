@@ -26,6 +26,12 @@ YANA is your **neighborhood, upgraded.**
 
 ---
 
+## 📸 Sneak Peek
+
+![YANA preview gif](./demo/preview.gif)
+
+---
+
 ## 🔥 Core Features
 
 ### 🔘 YANA Circles
