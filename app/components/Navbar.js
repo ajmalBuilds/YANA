@@ -22,7 +22,7 @@ const router = useRouter();
 
   return (
     <nav 
-      className={`fixed w-[100vw] z-50 transition-all duration-300 overflow-hidden ${
+      className={`fixed w-[100vw] z-50 transition-all duration-300  ${
         isScrolled 
           ? 'bg-white shadow-md py-2' 
           : 'bg-transparent py-4'
@@ -50,7 +50,7 @@ const router = useRouter();
           {/* Mobile Navigation Toggle */}
           <div className="md:hidden">
             <button 
-              onClick={() => setIsOpen(!isOpen)}
+              onClick={() => setIsOpen(!(isOpen))}
               className="text-gray-700 hover:text-violet-700 focus:outline-none"
             >
               {isOpen ? <X size={24} /> : <Menu size={24} />}

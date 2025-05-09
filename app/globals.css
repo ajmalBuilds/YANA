@@ -170,6 +170,10 @@
   .animate-slideInRight {
     animation: slideInRight 1s forwards;
   }
+
+  .animate-float {
+    animation: float 4s ease-in-out infinite;
+  }
 }
 
 @keyframes blob {
@@ -204,5 +208,17 @@
   100% {
     opacity: 1;
     transform: translateX(0);
+  }
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+  100% {
+    transform: translateY(0);
   }
 }

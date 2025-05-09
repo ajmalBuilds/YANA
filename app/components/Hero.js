@@ -95,9 +95,9 @@ const Hero = () => {
 
           <div
             ref={imageRef}
-            className="md:w-1/2 relative opacity-0 transform transition-all duration-1000 rounded-2xl delay-600 overflow-hidden"
+            className="md:w-1/2 relative opacity-0 bg-teal-100 transform transition-all duration-1000 rounded-2xl delay-600 overflow-hidden"
           >
-            <div className="relative">
+            <div className="relative animate-float">
               <div className="absolute -top-4 -left-4 w-64 h-64 bg-teal-100 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
               <div className="absolute -bottom-8 -right-8 w-64 h-64 bg-violet-100 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
               <div className="absolute -bottom-4 left-20 w-64 h-64 bg-orange-100 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>
