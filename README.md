@@ -12,6 +12,12 @@ Welcome to **YANA**, the platform that redefines local community interaction. Wh
 
 ---
 
+## 📸 Sneak Peek
+
+![YANA Preview](/public/demo/preview.png)
+
+---
+
 ## 💡 What is YANA?
 
 **YANA** is a locality-based social networking platform that bridges the gap between digital convenience and real-life communities. Imagine a tool where you can:
@@ -23,12 +29,6 @@ Welcome to **YANA**, the platform that redefines local community interaction. Wh
 - Stay safe and connected at all times 🛡️
 
 YANA is your **neighborhood, upgraded.**
-
----
-
-## 📸 Sneak Peek
-
-![YANA preview gif](./demo/preview.gif)
 
 ---
 
