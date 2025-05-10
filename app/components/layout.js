@@ -174,7 +174,7 @@ export default function Layout({ children }) {
         )}
 
         {/* Page Content */}
-        <div className={`${isCirclesPage ? "p-4 sm:p-6" : "p-4 sm:p-8"}`}>
+        <div className={`${isCirclesPage ? "" : "p-4 sm:p-2"}`}>
           {children}
         </div>
       </main>

@@ -11,13 +11,13 @@ function NavLink({ href, Icon }) {
     return (
       <button
         onClick={() => router.push(href)}
-        className={`flex items-center px-4 py-2 rounded-lg transition-colors ${
+        className={`flex items-center px-2 py-2 rounded-lg transition-colors ${
           isActive
             ? "bg-indigo-100 text-indigo-600"
             : "text-gray-600 hover:bg-gray-100"
         }`}
       >
-        <Icon className="h-5 w-5 mr-3" />
+        <Icon className="h-5 w-5 " />
       </button>
     );
   }
