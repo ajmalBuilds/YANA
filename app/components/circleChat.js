@@ -6,6 +6,7 @@ import { db } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
+import { useMediaQuery } from "react-responsive";
 import {
   collection,
   addDoc,
@@ -24,6 +25,8 @@ import {
   MoreVertical,
   UserRoundPlus,
   X,
+  ArrowBigLeft,
+  ArrowLeft,
 } from "lucide-react";
 
 const addMemberToCircle = async (circleId, userId) => {
@@ -114,7 +117,7 @@ const MessageBubble = ({ message, currentUser }) => {
 };
 
 // Circle header
-const CircleHeader = ({ circle }) => {
+const CircleHeader = ({ circle, setCircleId }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [showAddMemberForm, setShowAddMemberForm] = useState(false);
   const [newMemberId, setNewMemberId] = useState("");
@@ -152,6 +155,7 @@ const CircleHeader = ({ circle }) => {
   return (
     <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white sticky top-0 z-10">
       <div className="flex items-center space-x-4">
+      <ArrowLeft className="h-8 w-8 text-gray-600" onClick={() => setCircleId(null)} />
         <div className="relative">
           <img
             src={"/assets/avatar.png"}
@@ -235,7 +239,8 @@ const CircleHeader = ({ circle }) => {
   );
 };
 
-export default function CircleChat({ circleId, selectedCircleData }) {
+export default function CircleChat({ circleId, selectedCircleData, setSelectedCircle }) {
+  const isMobile = useMediaQuery({ query: '(max-width: 767px)' });
   const [messages, setMessages] = useState([]);
   const [messageInput, setMessageInput] = useState("");
   const user = auth.currentUser;
@@ -299,8 +304,8 @@ export default function CircleChat({ circleId, selectedCircleData }) {
 
   return (
     <>
-      <div className="flex flex-col flex-1 bg-white">
-        <CircleHeader circle={selectedCircleData} />
+      {circleId && <div className={`flex flex-col flex-1 bg-white ${isMobile ? "absolute top-0 left-0 w-full h-full" : ""} `}>
+        <CircleHeader circle={selectedCircleData} setCircleId={setSelectedCircle}/>
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto p-4 bg-white  bg-[url('/assets/circles-bg-4.jpeg')] bg-contain bg-center space-y-4">
@@ -346,7 +351,7 @@ export default function CircleChat({ circleId, selectedCircleData }) {
             </button>
           </div>
         </div>
-      </div>
+      </div>}
     </>
   );
 }

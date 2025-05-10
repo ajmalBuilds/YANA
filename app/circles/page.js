@@ -6,6 +6,7 @@ import { format } from "date-fns";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
+import { useMediaQuery } from "react-responsive";
 import {
   Send,
   Smile,
@@ -25,6 +26,8 @@ import Layout from "../components/layout";
 import { createCircle, getAllCircles } from "@/lib/circles";
 import { set } from "mongoose";
 import CircleChat from "../components/circleChat";
+import BottomNavBar from "../components/BottomNavBar";
+import InnerPageFooter from "../components/InnerPagefooter";
 
 // Circle preview (left panel)
 const CirclePreview = ({ circle, selected, onClick }) => (
@@ -126,6 +129,7 @@ const CircleHeader = ({ circle }) => (
 
 // Main Yana Circles Page
 const Messages = () => {
+  const isMobile = useMediaQuery({ query: "(max-width: 767px)" });
   const [selectedCircle, setSelectedCircle] = useState(null);
   const [messageInput, setMessageInput] = useState("");
   const messageEndRef = useRef(null);
@@ -153,7 +157,7 @@ const Messages = () => {
   });
 
   useEffect(() => {
-    if (circles.length > 0 && !selectedCircle) {
+    if (circles.length > 0 && !selectedCircle && !isMobile) {
       setSelectedCircle(circles[0].id);
     }
   }, [circles]);
@@ -251,34 +255,8 @@ const Messages = () => {
   return (
     <PrivateRoute>
       <Layout>
-        <header className="bg-white border-b border-gray-200">
-          <div className="flex items-center justify-between px-8 py-4">
-            <div className="flex items-center bg-gray-100 rounded-lg px-4 py-2 w-96">
-              <Search className="h-5 w-5 text-gray-400 mr-2" />
-              <input
-                type="text"
-                placeholder="Search your community..."
-                className="bg-transparent border-none focus:outline-none flex-1"
-              />
-            </div>
-            <div className="flex items-center space-x-4">
-              <button className="p-2 hover:bg-gray-100 rounded-lg">
-                <MessageSquarePlus
-                  className="h-5 w-5 text-gray-600 cursor-pointer"
-                  onClick={() => setShowForm(!showForm)}
-                />
-              </button>
-              <button className="p-2 hover:bg-gray-100 rounded-lg">
-                <Bell className="h-5 w-5 text-gray-600" />
-              </button>
-              <button className="p-2 hover:bg-gray-100 rounded-lg">
-                <LogOut className="h-5 w-5 text-gray-600" />
-              </button>
-            </div>
-          </div>
-        </header>
-        {circles.length > 0 ? (
-          <div className="h-[90vh] flex overflow-hidden">
+        {!isMobile && circles.length > 0 && (
+          <div className="h-[90vh] flex overflow-hidden left-0">
             <div className="w-96 bg-white border-r border-gray-200 flex flex-col">
               <div className="p-4 border-b border-gray-200">
                 <h1 className="text-2xl font-bold text-gray-900">
@@ -307,10 +285,40 @@ const Messages = () => {
               />
             )}
           </div>
-        ) : (
-          <div className="flex items-center justify-center h-full">
-            <p className="text-black-500 text-lg">No Circles</p>
+          ) 
+        }
+
+        {isMobile && circles.length > 0 && (
+          <div className="overflow-y-auto">
+            {circles.map((circle) => (
+              <CirclePreview
+                key={circle.id}
+                circle={circle}
+                selected={circle.id === selectedCircle}
+                onClick={() => setSelectedCircle(circle.id)}
+              />
+            ))}
           </div>
+        )}
+
+        {
+          (circles.length ===0 && !selectedCircle && (
+            <div className="flex items-center justify-center h-full">
+              <p className="text-black-500 text-lg">No Circles</p>
+            </div>
+          ))
+        }
+
+        {isMobile && selectedCircle && (
+          <CircleChat
+            circleId={selectedCircle}
+            selectedCircleData={selectedCircleData}
+            setSelectedCircle={setSelectedCircle}
+          />
+        )}
+
+        {isMobile && !selectedCircle && (
+          <BottomNavBar />
         )}
 
         {showForm && (

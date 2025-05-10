@@ -6,7 +6,9 @@ import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import PrivateRoute from "@/components/PrivateRoute";
+import { useMediaQuery } from "react-responsive";
 import { Calendar, TrendingUp, Users, Bell } from "lucide-react";
+import InnerPageFooter from "../components/InnerPagefooter";
 
 function ActivityCard({ icon: Icon, title, description, time }) {
   return (
@@ -25,7 +27,7 @@ function ActivityCard({ icon: Icon, title, description, time }) {
 
 function StatCard({ icon: Icon, label, value }) {
   return (
-    <div className="bg-white p-6 rounded-xl shadow-sm">
+    <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm w-full">
       <div className="flex items-center space-x-4">
         <div className="p-2 bg-indigo-100 rounded-lg">
           <Icon className="h-6 w-6 text-indigo-600" />
@@ -40,12 +42,12 @@ function StatCard({ icon: Icon, label, value }) {
 }
 
 function Dashboard() {
+  const isMobile = useMediaQuery({ query: "(max-width: 767px)" });
   const [currentUser, setCurrentUser] = useState({});
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    setLoading(true);
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setCurrentUser(user);
@@ -59,37 +61,34 @@ function Dashboard() {
   }, []);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div className="p-8">Loading...</div>;
   }
 
   return (
     <PrivateRoute>
       <Layout>
-        <div className="space-y-8">
+        <div className="px-4 sm:px-8 py-6 space-y-8">
+          {/* Welcome Header */}
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">
-              Welcome back, {currentUser.displayName}!
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              Welcome back, {currentUser?.displayName || "Neighbor"}!
             </h1>
             <p className="text-gray-600">
               Here's what's happening in your community today.
             </p>
           </div>
 
-          {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Stats Section */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard icon={Users} value="156" label="Active Neighbors" />
             <StatCard icon={Calendar} value="12" label="Upcoming Events" />
-            <StatCard
-              icon={TrendingUp}
-              value="89%"
-              label="Community Engagement"
-            />
+            <StatCard icon={TrendingUp} value="89%" label="Engagement" />
             <StatCard icon={Bell} value="24" label="New Updates" />
           </div>
 
           {/* Recent Activity */}
           <div className="bg-white rounded-xl shadow-sm">
-            <div className="p-6 border-b border-gray-200">
+            <div className="p-4 sm:p-6 border-b border-gray-200">
               <h2 className="text-lg font-semibold text-gray-900">
                 Recent Activity
               </h2>
@@ -97,8 +96,8 @@ function Dashboard() {
             <div className="divide-y divide-gray-200">
               <ActivityCard
                 icon={Users}
-                title="New Community Member"
-                description="John Smith joined your neighborhood community"
+                title="New Member"
+                description="John Smith joined your neighborhood"
                 time="2 hours ago"
               />
               <ActivityCard

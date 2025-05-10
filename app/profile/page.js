@@ -7,6 +7,8 @@ import { Mail, Phone, MapPin, Calendar, Camera } from "lucide-react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
+import { useMediaQuery } from "react-responsive";
+import InnerPageFooter from "../components/InnerPagefooter";
 
 function ProfileSection({ title, children }) {
   return (
@@ -18,6 +20,7 @@ function ProfileSection({ title, children }) {
 }
 
 function Profile() {
+  const isMobile = useMediaQuery({ query: "(max-width: 767px)" });
   const [currentUser, setCurrentUser] = useState({});
   const [loading, setLoading] = useState(false);
   const router = useRouter();

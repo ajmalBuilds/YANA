@@ -17,6 +17,8 @@ import { useRouter } from "next/navigation";
 import { Trash2, X, TriangleAlert } from "lucide-react";
 import axios from "axios";
 import { set } from "mongoose";
+import { useMediaQuery } from "react-responsive";
+import InnerPageFooter from "../components/InnerPagefooter";
 
 function ListingCard({
   _id,
@@ -290,6 +292,7 @@ function CustomDropdown({ label, name, options, value, onChange }) {
 }
 
 function Shelf() {
+  const isMobile = useMediaQuery({ query: "(max-width: 767px)" });
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingShelf, setLoadingShelf] = useState(false);

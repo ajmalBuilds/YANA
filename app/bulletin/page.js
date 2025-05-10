@@ -15,6 +15,8 @@ import Datetime from "react-datetime";
 import "react-datetime/css/react-datetime.css";
 import moment from "moment";
 import { set } from "mongoose";
+import { useMediaQuery } from "react-responsive";
+import InnerPageFooter from "../components/InnerPagefooter";
 
 function SkeltonCard() {
   return (
@@ -318,6 +320,7 @@ function isEventCompleted(timeOfEvent) {
 }
 
 function Bulletin() {
+  const isMobile = useMediaQuery({ query: "(max-width: 767px)" });
   const [showAddPopup, setShowAddPopup] = useState(false);
   const [newEvent, setNewEvent] = useState({
     title: "",
@@ -356,16 +359,6 @@ function Bulletin() {
       return null;
     }
   };
-  // useEffect(() => {
-  //   const fetchUserRole = async () => {
-  //     const user = auth.currentUser;
-  //     if (user) {
-  //       const role = await getUserRole(user.uid);
-  //       setUserRole(role);
-  //     }
-  //   };
-  //   fetchUserRole();
-  // }, []);
 
   useEffect(() => {
     setLoading(true);
@@ -535,7 +528,7 @@ function Bulletin() {
                 📣 Yana Bulletin
               </h1>
               <p className="text-gray-600">
-                Discover and join events happening in your Circles.
+                Discover and join events in your Circles.
               </p>
             </div>
             <button
@@ -713,8 +706,3 @@ function Bulletin() {
 }
 
 export default Bulletin;
-
-// if (moment.isMoment(date)) {
-//   const formatted = date.format("MMMM D, YYYY • h:mm A");
-//   setNewEvent({ ...newEvent, date: formatted });
-// }
